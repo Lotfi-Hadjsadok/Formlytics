@@ -3,7 +3,7 @@ import { prismaAdapter } from 'better-auth/adapters/prisma'
 import prisma from '@/lib/prisma'
 import { nextCookies } from 'better-auth/next-js'
 import { headers } from 'next/headers'
-import { Customers, Prisma,   User } from '@/generated/prisma'
+import { Customers, Prisma,   Subscriptions,   User } from '@/generated/prisma'
 import { PricingTier, Tier } from '@/constatnts/paddle-prices'
 
 export const auth = betterAuth({
@@ -46,18 +46,21 @@ export const getUser = async (include?: Prisma.UserInclude) => {
 }
 
 export const getActiveSubscription = async (): Promise<Tier | undefined> => {
-    const user = await getUser();
-    if (!user) {
+    const user = await getUser({
+        customer: {
+            include: {
+                subscriptions: true
+            }
+        }
+    }) as User & { customer: Customers & { subscriptions: Subscriptions[] } };
+    if (!user || !user.customer) {
         return undefined;
     }
-    const subscription = await prisma.subscriptions.findFirst({
-        where: {
-            userId: user.id,
-            subscriptionStatus: {
-                in: ['active', 'trialing'],
-            },
-        },
-    });
+    
+    const subscription = user.customer.subscriptions.find(sub => 
+        sub.subscriptionStatus === 'active' || sub.subscriptionStatus === 'trialing'
+    );
+    
     if (!subscription) {
         return undefined;
     }
