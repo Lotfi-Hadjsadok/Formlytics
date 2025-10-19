@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/prisma"
@@ -15,25 +9,25 @@ datasource db {
 }
 
 model User {
-  id            String    @id
+  id            String          @id
   name          String
-  email         String
-  emailVerified Boolean   @default(false)
+  email         String          @unique
+  emailVerified Boolean         @default(false)
   image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @default(now()) @updatedAt
-  sessions      Session[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @default(now()) @updatedAt
   accounts      Account[]
-  customer Customers?
+  customer      Customers?
+  sessions      Session[]
+  subscriptions Subscriptions[]
 
-  @@unique([email])
   @@map("user")
 }
 
 model Session {
   id        String   @id
   expiresAt DateTime
-  token     String
+  token     String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   ipAddress String?
@@ -41,7 +35,6 @@ model Session {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([token])
   @@map("session")
 }
 
@@ -50,7 +43,6 @@ model Account {
   accountId             String
   providerId            String
   userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?
   idToken               String?
@@ -60,6 +52,7 @@ model Account {
   password              String?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("account")
 }
@@ -75,28 +68,30 @@ model Verification {
   @@map("verification")
 }
 
-
 model Customers {
-  customerId String @id
-  userId String @unique
-  email String @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  Subscriptions Subscriptions[]
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  customerId    String          @id
+  email         String          @unique
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  userId        String          @unique
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscriptions Subscriptions[]
+
   @@map("customers")
 }
 
 model Subscriptions {
-  subscriptionId String @id
+  subscriptionId     String    @id
+  userId             String
   subscriptionStatus String
-  priceId String
-  productId String
-  scheduledChange String
-  customerId String
-  customer Customers @relation(fields: [customerId], references: [customerId], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  priceId            String
+  productId          String
+  scheduledChange    String
+  customerId         String
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  customer           Customers @relation(fields: [customerId], references: [customerId], onDelete: Cascade)
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("subscriptions")
 }

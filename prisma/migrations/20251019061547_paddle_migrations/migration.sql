@@ -62,6 +62,7 @@ CREATE TABLE "customers" (
     "email" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "userId" TEXT NOT NULL,
 
     CONSTRAINT "customers_pkey" PRIMARY KEY ("customerId")
 );
@@ -69,6 +70,7 @@ CREATE TABLE "customers" (
 -- CreateTable
 CREATE TABLE "subscriptions" (
     "subscriptionId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
     "subscriptionStatus" TEXT NOT NULL,
     "priceId" TEXT NOT NULL,
     "productId" TEXT NOT NULL,
@@ -89,6 +91,9 @@ CREATE UNIQUE INDEX "session_token_key" ON "session"("token");
 -- CreateIndex
 CREATE UNIQUE INDEX "customers_email_key" ON "customers"("email");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "customers_userId_key" ON "customers"("userId");
+
 -- AddForeignKey
 ALTER TABLE "session" ADD CONSTRAINT "session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
@@ -96,4 +101,10 @@ ALTER TABLE "session" ADD CONSTRAINT "session_userId_fkey" FOREIGN KEY ("userId"
 ALTER TABLE "account" ADD CONSTRAINT "account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "customers" ADD CONSTRAINT "customers_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "subscriptions" ADD CONSTRAINT "subscriptions_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "customers"("customerId") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "subscriptions" ADD CONSTRAINT "subscriptions_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
