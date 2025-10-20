@@ -68,7 +68,7 @@ export const getUser = async (include?: Prisma.UserInclude) => {
     return user;
 }
 
-export const getActiveSubscription = async (): Promise<Tier | undefined> => {
+export const getActiveSubscription = async (): Promise<(Tier & { isYearly: boolean }) | undefined> => {
     const user = await getUser({
         organization: {
             include: {
@@ -101,5 +101,11 @@ export const getActiveSubscription = async (): Promise<Tier | undefined> => {
         tier.priceId.year === subscription.priceId
     );
     
-    return tier;
+    if (!tier) {
+        return undefined;
+    }
+    
+    const isYearly = tier.priceId.year === subscription.priceId;
+    
+    return { ...tier, isYearly };
 }

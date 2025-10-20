@@ -54,8 +54,6 @@ import { Prisma } from '@/generated/prisma';
         if (error instanceof Error) {
           console.log(error.message);
         }
-      } finally {
-        console.log('subscription created');
       }
     }
   
@@ -91,8 +89,6 @@ import { Prisma } from '@/generated/prisma';
         if (error instanceof Error) {
           console.log(error.message);
         }
-      } finally {
-        console.log('subscription updated');
       }
     }
   
@@ -111,10 +107,6 @@ import { Prisma } from '@/generated/prisma';
         if (error instanceof Error) {
           console.log(error.message)
         } 
-      }
-      finally {
-        console.log(eventData)
-        console.log('organization updated');
       }
      
     }

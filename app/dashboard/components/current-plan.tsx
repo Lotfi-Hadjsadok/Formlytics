@@ -42,6 +42,10 @@ export default async function CurrentPlan() {
 
   const IconComponent = iconMap[activeSubscription.icon as keyof typeof iconMap] || CheckCircle;
 
+  // Determine pricing and billing period based on subscription type
+  const price = activeSubscription.isYearly ? activeSubscription.pricing.yearly : activeSubscription.pricing.monthly;
+  const billingPeriod = activeSubscription.isYearly ? '/year' : '/month';
+
   return (
     <Card className={`w-full max-w-md ${activeSubscription.colors.background} ${activeSubscription.colors.border} border-2`}>
       <CardHeader>
@@ -65,9 +69,9 @@ export default async function CurrentPlan() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <span className="text-2xl font-bold">
-              ${activeSubscription.pricing.monthly}
+              ${price}
             </span>
-            <span className="text-sm text-gray-600">/month</span>
+            <span className="text-sm text-gray-600">{billingPeriod}</span>
           </div>
           
           <div className="space-y-2">
