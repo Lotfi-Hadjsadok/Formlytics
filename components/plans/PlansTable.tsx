@@ -1,7 +1,7 @@
 'use client'
 import { PricingTier } from "@/constatnts/paddle-prices";
 import { usePaddle } from "@/hooks/usePaddle";
-import { Customers, User } from "@/generated/prisma";
+import { Organization, User } from "@/generated/prisma";
 import { Tier } from "@/constatnts/paddle-prices";
 import { createPaddleCustomer } from "./actions";
 import { useState } from "react";
@@ -13,33 +13,45 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 
 
-export default function PlansTable({ user }: { user: User & { customer: Customers } }) {
-    const { paddle,loading } = usePaddle(user.customer?.customerId); 
+export default function PlansTable({ user }: { user: User & { organization: Organization | null } }) {
+    const { paddle, loading } = usePaddle(user.organization?.paddleCustomerId || undefined); 
     const [checkoutLoading, setCheckoutLoading] = useState(false);
     const [isYearly, setIsYearly] = useState(false);  
+    
     const handleCheckout = async (tier: Tier) => {
+      if (!user.organization) {
+        console.error('Organization not found for user');
+        return;
+      }
+
       setCheckoutLoading(true);
-      const paddleCustomerId = await createPaddleCustomer(user);
+      try {
+        const paddleCustomerId = await createPaddleCustomer(user);
 
-      const priceId = isYearly ? tier.priceId.year : tier.priceId.month;
+        const priceId = isYearly ? tier.priceId.year : tier.priceId.month;
 
-      paddle?.Checkout.open({
-        settings:{
-          allowLogout: true,
-          successUrl: `${window.location.origin}/success`,
-        },
-        customData:{
-          userId: user.id,
-        },
-        customer:{
-          id: paddleCustomerId,
-        },
-        items: [{
-          priceId: priceId,
-          quantity: 1
-        }],
-      })
-      setCheckoutLoading(false);
+        paddle?.Checkout.open({
+          settings:{
+            allowLogout: true,
+            successUrl: `${window.location.origin}/success`,
+          },
+          customData:{
+            userId: user.id,
+            organizationId: user.organization.id,
+          },
+          customer:{
+            id: paddleCustomerId,
+          },
+          items: [{
+            priceId: priceId,
+            quantity: 1
+          }],
+        })
+      } catch (error) {
+        console.error('Checkout error:', error);
+      } finally {
+        setCheckoutLoading(false);
+      }
     }
 
 

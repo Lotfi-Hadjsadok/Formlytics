@@ -26,21 +26,26 @@ import { Prisma } from '@/generated/prisma';
 
     private async createSubscription(eventData: SubscriptionCreatedEvent) {
       try {
+        // Find the organization by Paddle customer ID
+        const organization = await prisma.organization.findUnique({
+          where: { paddleCustomerId: eventData.data.customerId },
+        });
+
+        if (!organization) {
+          console.error('Organization not found for customerId:', eventData.data.customerId);
+          return;
+        }
+
         await prisma.subscriptions.create({
-            data: {
+          data: {
             subscriptionId: eventData.data.id,
             subscriptionStatus: eventData.data.status,
             priceId: eventData.data.items[0].price?.id ?? '',
             productId: eventData.data.items[0].price?.productId ?? '',
             scheduledChange: eventData.data.scheduledChange?.effectiveAt ?? '',
-            customer:{
-              connect:{
-                customerId: eventData.data.customerId,
-              },
-            },
-            user:{
-              connect:{
-                id: eventData.data.customData?.userId as string,
+            organization: {
+              connect: {
+                id: organization.id,
               },
             },
           },
@@ -56,6 +61,16 @@ import { Prisma } from '@/generated/prisma';
   
     private async updateSubscriptionData(eventData: SubscriptionUpdatedEvent) {
       try {
+        // Find the organization by Paddle customer ID
+        const organization = await prisma.organization.findUnique({
+          where: { paddleCustomerId: eventData.data.customerId },
+        });
+
+        if (!organization) {
+          console.error('Organization not found for customerId:', eventData.data.customerId);
+          return;
+        }
+
         await prisma.subscriptions.update({
           where: {
             subscriptionId: eventData.data.id,
@@ -65,14 +80,9 @@ import { Prisma } from '@/generated/prisma';
             priceId: eventData.data.items[0].price?.id ?? '',
             productId: eventData.data.items[0].price?.productId ?? '',
             scheduledChange: eventData.data.scheduledChange?.effectiveAt ?? '',
-            customer:{
-              connect:{
-                customerId: eventData.data.customerId,
-              },
-            },
-            user:{
-              connect:{
-                id: eventData.data.customData?.userId as string,
+            organization: {
+              connect: {
+                id: organization.id,
               },
             },
           },
@@ -88,13 +98,12 @@ import { Prisma } from '@/generated/prisma';
   
     private async updateCustomerData(eventData: CustomerCreatedEvent | CustomerUpdatedEvent) {
       try {
-        await prisma.customers.update({
+        await prisma.organization.update({
           where: {
-            customerId: eventData.data.id,
+            paddleCustomerId: eventData.data.id,
           },
           data: {
-            email: eventData.data.email,
-            userId: eventData.data.customData?.userId as string,
+            name: eventData.data.name ?? 'Organization',
           },
         });
 
@@ -105,7 +114,7 @@ import { Prisma } from '@/generated/prisma';
       }
       finally {
         console.log(eventData)
-        console.log('customer updated');
+        console.log('organization updated');
       }
      
     }

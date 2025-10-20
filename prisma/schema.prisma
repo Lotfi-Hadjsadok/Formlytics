@@ -9,16 +9,17 @@ datasource db {
 }
 
 model User {
-  id            String          @id
-  name          String
-  email         String          @unique
-  emailVerified Boolean         @default(false)
-  image         String?
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @default(now()) @updatedAt
-  accounts      Account[]
-  customer      Customers?
-  sessions      Session[]
+  id             String        @id
+  name           String
+  email          String        @unique
+  emailVerified  Boolean       @default(false)
+  image          String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @default(now()) @updatedAt
+  accounts       Account[]
+  sessions       Session[]
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
 
   @@map("user")
 }
@@ -67,29 +68,42 @@ model Verification {
   @@map("verification")
 }
 
-model Customers {
-  customerId    String          @id
-  email         String          @unique
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  userId        String          @unique
-  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  subscriptions Subscriptions[]
+model Organization {
+  id               String          @id @default(cuid())
+  name             String
+  paddleCustomerId String?         @unique
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  users            User[]
+  subscriptions    Subscriptions[]
+  transactions     Transactions[]
 
-  @@map("customers")
+  @@map("organizations")
 }
 
 model Subscriptions {
-  subscriptionId     String    @id
-  userId             String
+  subscriptionId     String       @id
   subscriptionStatus String
   priceId            String
   productId          String
   scheduledChange    String
-  customerId         String
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-  customer           Customers @relation(fields: [customerId], references: [customerId], onDelete: Cascade)
+  organizationId     String
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  organization       Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@map("subscriptions")
+}
+
+model Transactions {
+  transactionId  String       @id
+  status         String
+  amount         String
+  currencyCode   String
+  organizationId String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("transactions")
 }

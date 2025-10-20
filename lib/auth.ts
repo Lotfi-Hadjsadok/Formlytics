@@ -1,10 +1,11 @@
-import { betterAuth } from 'better-auth'
+import { APIError, betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import prisma from '@/lib/prisma'
 import { nextCookies } from 'better-auth/next-js'
 import { headers } from 'next/headers'
-import { Customers, Prisma,   Subscriptions,   User } from '@/generated/prisma'
+import { Organization, Prisma, Subscriptions, User } from '@/generated/prisma'
 import { PricingTier, Tier } from '@/constatnts/paddle-prices'
+import { createAuthMiddleware } from 'better-auth/api'
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -23,8 +24,30 @@ export const auth = betterAuth({
       "https://3f4e8d398cb6.ngrok-free.app",
       "http://localhost:3000"
   ],
-  plugins:[nextCookies()]
+  plugins:[nextCookies()],
+  hooks:{
+    after:createAuthMiddleware(async (ctx) => {
+      if(ctx.path === '/sign-up/email' || ctx.path?.startsWith('/sign-in/social')){
+        if(ctx.context.returned instanceof APIError){
+          return;
+        }
+        const user = (ctx.context.returned as {user:User}).user as User;
+        if(user){
+          const organization = await prisma.organization.create({
+            data: {
+              name: `${user.name}'s Organization`,
+            },
+          });
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { organizationId: organization.id },
+          });
+        }
+      }
+    })
+  }
 })
+
 
 export const getUser = async (include?: Prisma.UserInclude) => {
     const session = await auth.api.getSession({
@@ -47,19 +70,27 @@ export const getUser = async (include?: Prisma.UserInclude) => {
 
 export const getActiveSubscription = async (): Promise<Tier | undefined> => {
     const user = await getUser({
-        customer: {
+        organization: {
             include: {
-                subscriptions: true
+                subscriptions: {
+                  where:{
+                    subscriptionStatus:{
+                      in:['active','trialing'],
+                    }
+                  },
+                  take:1
+                  
+                },
             }
         }
-    }) as User & { customer: Customers & { subscriptions: Subscriptions[] } };
-    if (!user || !user.customer) {
+    }) as User & { organization: Organization & { subscriptions: Subscriptions[] } };
+
+
+    if (!user || !user.organization) {
         return undefined;
     }
     
-    const subscription = user.customer.subscriptions.find(sub => 
-        sub.subscriptionStatus === 'active' || sub.subscriptionStatus === 'trialing'
-    );
+    const subscription = user.organization.subscriptions[0];
     
     if (!subscription) {
         return undefined;
