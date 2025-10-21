@@ -90,19 +90,99 @@ export default async function FormDetailPage({ params }: FormDetailPageProps) {
               <div>
                 <h3 className="font-semibold text-gray-900 mb-2">Form Fields</h3>
                 <div className="space-y-2">
-                  {(form.fields as any[]).map((field, index) => (
-                    <div key={field.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div>
-                        <span className="font-medium">{field.label}</span>
-                        <span className="text-sm text-gray-500 ml-2">({field.type})</span>
-                      </div>
-                      {field.required && (
-                        <Badge variant="destructive" className="text-xs">
-                          Required
-                        </Badge>
+                  {form.isMultistep ? (
+                    // Handle multistep forms
+                    <div className="space-y-4">
+                      {(form.steps as any[])?.map((step, stepIndex) => (
+                        <div key={stepIndex} className="relative">
+                          {/* Step Header */}
+                          <div className="flex items-center gap-3 mb-3">
+                            <div className="flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full text-sm font-semibold">
+                              {stepIndex + 1}
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="font-semibold text-gray-900 text-lg">
+                                {step.title || `Step ${stepIndex + 1}`}
+                              </h4>
+                              {step.description && (
+                                <p className="text-sm text-gray-600 mt-1">{step.description}</p>
+                              )}
+                            </div>
+                            <Badge variant="outline" className="text-xs">
+                              {step.fields?.length || 0} fields
+                            </Badge>
+                          </div>
+                          
+                          {/* Step Fields */}
+                          <div className="ml-11 space-y-2">
+                            {step.fields?.map((field: any, fieldIndex: number) => (
+                              <div key={fieldIndex} className="group flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                                  <div>
+                                    <span className="font-medium text-gray-900">{field.label}</span>
+                                    <span className="text-sm text-gray-500 ml-2 capitalize">({field.type})</span>
+                                    {field.placeholder && (
+                                      <div className="text-xs text-gray-400 mt-1">
+                                        Placeholder: "{field.placeholder}"
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  {field.required && (
+                                    <Badge variant="destructive" className="text-xs">
+                                      Required
+                                    </Badge>
+                                  )}
+                                  {field.validation && (
+                                    <Badge variant="secondary" className="text-xs">
+                                      Validated
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                            )) || (
+                              <div className="text-center py-4 text-gray-500 text-sm">
+                                No fields in this step
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Step Separator */}
+                          {stepIndex < (form.steps as any[]).length - 1 && (
+                            <div className="ml-11 mt-4 mb-2">
+                              <div className="h-px bg-gradient-to-r from-blue-200 via-gray-300 to-blue-200"></div>
+                            </div>
+                          )}
+                        </div>
+                      )) || (
+                        <div className="text-center py-8 text-gray-500">
+                          <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg>
+                          </div>
+                          <p>No steps configured</p>
+                        </div>
                       )}
                     </div>
-                  ))}
+                  ) : (
+                    // Handle single-step forms
+                    (form.fields as any[])?.map((field, index) => (
+                      <div key={field.id || index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div>
+                          <span className="font-medium">{field.label}</span>
+                          <span className="text-sm text-gray-500 ml-2">({field.type})</span>
+                        </div>
+                        {field.required && (
+                          <Badge variant="destructive" className="text-xs">
+                            Required
+                          </Badge>
+                        )}
+                      </div>
+                    )) || <p className="text-gray-500">No fields configured</p>
+                  )}
                 </div>
               </div>
               
@@ -173,7 +253,12 @@ export default async function FormDetailPage({ params }: FormDetailPageProps) {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Form Fields</span>
-                <span className="font-semibold">{(form.fields as any[]).length}</span>
+                <span className="font-semibold">
+                  {form.isMultistep 
+                    ? (form.steps as any[])?.reduce((total, step) => total + (step.fields?.length || 0), 0) || 0
+                    : (form.fields as any[])?.length || 0
+                  }
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-gray-600">Created</span>

@@ -9,7 +9,9 @@ import { redirect } from "next/navigation"
 export async function createForm(formData: {
   title: string
   description?: string
-  fields: any[]
+  fields?: any[]
+  steps?: any[]
+  isMultistep?: boolean
   settings?: any
   styling?: any
   thankYouPage?: any
@@ -25,15 +27,28 @@ export async function createForm(formData: {
       throw new Error("Organization required")
     }
 
-    if (!formData.title || !formData.fields || !Array.isArray(formData.fields)) {
-      throw new Error("Invalid form data")
+    if (!formData.title) {
+      throw new Error("Form title is required")
+    }
+
+    // Validate form structure based on type
+    if (formData.isMultistep) {
+      if (!formData.steps || !Array.isArray(formData.steps) || formData.steps.length === 0) {
+        throw new Error("Multistep forms must have at least one step")
+      }
+    } else {
+      if (!formData.fields || !Array.isArray(formData.fields) || formData.fields.length === 0) {
+        throw new Error("Single-step forms must have at least one field")
+      }
     }
 
     const form = await prisma.form.create({
       data: {
         title: formData.title,
         description: formData.description || null,
-        fields: formData.fields,
+        fields: formData.isMultistep ? undefined : formData.fields,
+        steps: formData.isMultistep ? formData.steps : undefined,
+        isMultistep: formData.isMultistep || false,
         settings: formData.settings || {},
         styling: formData.styling || {},
         thankYouPage: formData.thankYouPage || {},
@@ -52,7 +67,9 @@ export async function createForm(formData: {
 export async function updateForm(formId: string, formData: {
   title: string
   description?: string
-  fields: any[]
+  fields?: any[]
+  steps?: any[]
+  isMultistep?: boolean
   settings?: any
   styling?: any
   thankYouPage?: any
@@ -68,8 +85,19 @@ export async function updateForm(formId: string, formData: {
       throw new Error("Organization required")
     }
 
-    if (!formData.title || !formData.fields || !Array.isArray(formData.fields)) {
-      throw new Error("Invalid form data")
+    if (!formData.title) {
+      throw new Error("Form title is required")
+    }
+
+    // Validate form structure based on type
+    if (formData.isMultistep) {
+      if (!formData.steps || !Array.isArray(formData.steps) || formData.steps.length === 0) {
+        throw new Error("Multistep forms must have at least one step")
+      }
+    } else {
+      if (!formData.fields || !Array.isArray(formData.fields) || formData.fields.length === 0) {
+        throw new Error("Single-step forms must have at least one field")
+      }
     }
 
     // Check if the form belongs to the user's organization
@@ -91,7 +119,9 @@ export async function updateForm(formId: string, formData: {
       data: {
         title: formData.title,
         description: formData.description || null,
-        fields: formData.fields,
+        fields: formData.isMultistep ? undefined : formData.fields,
+        steps: formData.isMultistep ? formData.steps : undefined,
+        isMultistep: formData.isMultistep || false,
         settings: formData.settings || {},
         styling: formData.styling || {},
         thankYouPage: formData.thankYouPage || {},

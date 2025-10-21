@@ -23,6 +23,7 @@ import {
   ChevronDown
 } from "lucide-react"
 import { FormRenderer } from "@/components/forms/FormRenderer"
+import { toast } from "sonner"
 
 interface FormField {
   id: string
@@ -135,7 +136,7 @@ export default function FormPage() {
       // Form submission handled by FormRenderer
     } catch (error) {
       console.error('Error submitting form:', error)
-      alert(error instanceof Error ? error.message : 'Failed to submit form. Please try again.')
+      toast.error(error instanceof Error ? error.message : 'Failed to submit form. Please try again.')
     } finally {
       setSubmitting(false)
     }
@@ -242,7 +243,7 @@ export default FormlyticsForm;`
       }
     } catch (err) {
       console.error('Error saving embedding settings:', err)
-      alert('Failed to save embedding settings. Please try again.')
+      toast.error('Failed to save embedding settings. Please try again.')
     }
   }
 

@@ -102,8 +102,8 @@ export function FormAnalytics({ dailyResponses, fieldAnalytics }: FormAnalyticsP
         </CardHeader>
         <CardContent>
           {hasResponseData ? (
-            <div className="h-[350px] w-full min-w-0">
-              <ResponsiveContainer width="100%" height="100%" minWidth={300} minHeight={250}>
+            <div className="h-[350px] w-full">
+              <ResponsiveContainer width="100%" height={350}>
                 <AreaChart data={responseTrendData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorResponses" x1="0" y1="0" x2="0" y2="1">
@@ -277,8 +277,8 @@ export function FormAnalytics({ dailyResponses, fieldAnalytics }: FormAnalyticsP
                   {Object.keys(field.optionCounts).length > 1 && (
                     <div className="mt-6">
                       <h4 className="font-semibold text-gray-700 text-sm mb-3">Visual Distribution</h4>
-                      <div className="h-[200px] w-full">
-                        <ResponsiveContainer width="100%" height="100%">
+                      <div className="h-[200px] w-full min-h-[200px]">
+                        <ResponsiveContainer width="100%" height={200}>
                           <PieChart>
                             <Pie
                               data={Object.entries(field.optionCounts).map(([option, count]) => ({

@@ -113,7 +113,9 @@ model Form {
   id             String      @id @default(cuid())
   title          String
   description    String?
-  fields         Json        // Store form field configuration as JSON
+  fields         Json?       // Store form field configuration as JSON (for single-step forms)
+  steps          Json?       // Store form steps configuration as JSON (for multistep forms)
+  isMultistep    Boolean     @default(false) // Flag to indicate if this is a multistep form
   settings       Json?       // Store form settings as JSON
   styling        Json?       // Store form styling as JSON
   embedding      Json?       // Store embedding settings as JSON (allowedOrigins, tabSpecific, etc.)

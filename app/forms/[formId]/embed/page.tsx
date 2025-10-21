@@ -6,6 +6,7 @@ import { getForm, submitFormEntry } from "@/lib/actions"
 import { Button } from "@/components/ui/button"
 import { CheckCircle, AlertCircle, Shield, Loader2 } from "lucide-react"
 import { FormRenderer } from "@/components/forms/FormRenderer"
+import { toast } from "sonner"
 
 interface FormField {
   id: string
@@ -153,7 +154,7 @@ export default function EmbedFormPage() {
       setSubmitted(true)
     } catch (err) {
       console.error('Error submitting form:', err)
-      alert(err instanceof Error ? err.message : 'Failed to submit form. Please try again.')
+      toast.error(err instanceof Error ? err.message : 'Failed to submit form. Please try again.')
     } finally {
       setSubmitting(false)
     }

@@ -48,6 +48,26 @@ export default async function FormAnalyticsPage({ params }: FormAnalyticsPagePro
     notFound()
   }
 
+  // Extract all fields from the form (handles both single-step and multistep forms)
+  const getAllFormFields = () => {
+    if (form.isMultistep && form.steps) {
+      // For multistep forms, extract fields from all steps
+      const allFields: any[] = []
+      ;(form.steps as any[]).forEach((step: any) => {
+        if (step.fields) {
+          allFields.push(...step.fields)
+        }
+      })
+      return allFields
+    } else if (form.fields) {
+      // For single-step forms, use the fields directly
+      return form.fields as any[]
+    }
+    return []
+  }
+
+  const formFields = getAllFormFields()
+
   // Calculate analytics data
   const totalResponses = form._count.entries
   
@@ -79,7 +99,7 @@ export default async function FormAnalyticsPage({ params }: FormAnalyticsPagePro
   })
 
   // Calculate field analytics
-  const fieldAnalytics = (form.fields as any[]).map(field => {
+  const fieldAnalytics = formFields.map(field => {
     const fieldResponses = form.entries.map(entry => (entry.answers as any)?.[field.id]).filter(Boolean)
     
     let analytics: any = {
@@ -223,15 +243,14 @@ export default async function FormAnalyticsPage({ params }: FormAnalyticsPagePro
           <CardContent>
             <div className="text-3xl font-bold text-orange-600">
               {(() => {
-                if (form.entries.length === 0) return 0
+                if (form.entries.length === 0 || formFields.length === 0) return 0
                 
-                const fields = form.fields as Array<{ id: string; label: string; type: string }>
-                const totalCompletionRate = fields.reduce((sum, field) => {
+                const totalCompletionRate = formFields.reduce((sum, field) => {
                   const fieldResponses = form.entries.filter(entry => (entry.answers as any)?.[field.id]).length
                   return sum + (fieldResponses / form.entries.length)
                 }, 0)
                 
-                return Math.round((totalCompletionRate / fields.length) * 100)
+                return Math.round((totalCompletionRate / formFields.length) * 100)
               })()}%
             </div>
             <p className="text-xs text-orange-600/70 font-medium">
@@ -255,7 +274,7 @@ export default async function FormAnalyticsPage({ params }: FormAnalyticsPagePro
         <CardContent>
           <PaginatedFormEntriesTableClient 
             formId={form.id}
-            formFields={form.fields as any}
+            formFields={formFields}
             initialEntries={form.entries.slice(0, 10)}
             initialTotalCount={totalResponses}
           />

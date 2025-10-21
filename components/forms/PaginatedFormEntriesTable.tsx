@@ -75,7 +75,7 @@ function useColumnOrder(formFields: FormField[], formId?: string) {
   
   const getDefaultColumns = useCallback((): ColumnConfig[] => [
     { id: 'submitted', label: 'Submitted', visible: true, sortable: true },
-    ...formFields.map(field => ({
+    ...(formFields || []).map(field => ({
       id: field.id,
       label: field.label,
       visible: true,
@@ -92,7 +92,7 @@ function useColumnOrder(formFields: FormField[], formId?: string) {
       if (saved) {
         const parsedColumns = JSON.parse(saved) as ColumnConfig[]
         // Validate that all current form fields are present
-        const currentFieldIds = new Set(formFields.map(f => f.id))
+        const currentFieldIds = new Set((formFields || []).map(f => f.id))
         const savedFieldIds = new Set(parsedColumns.filter(c => c.id !== 'submitted' && c.id !== 'actions').map(c => c.id))
         
         // If form fields have changed, merge with defaults
@@ -137,7 +137,7 @@ function useColumnOrder(formFields: FormField[], formId?: string) {
 
   // Update columns when formFields change
   useEffect(() => {
-    const currentFieldIds = new Set(formFields.map(f => f.id))
+    const currentFieldIds = new Set((formFields || []).map(f => f.id))
     const columnFieldIds = new Set(columns.filter(c => c.id !== 'submitted' && c.id !== 'actions').map(c => c.id))
     
     if (currentFieldIds.size !== columnFieldIds.size || 
@@ -339,7 +339,7 @@ export function PaginatedFormEntriesTable({
         ...visibleColumns
           .filter(col => col.id !== 'submitted' && col.id !== 'actions')
           .map(col => {
-            const field = formFields.find(f => f.id === col.id)
+            const field = (formFields || []).find(f => f.id === col.id)
             if (!field) return ""
             const answer = entry.answers[field.id]
             const formatted = formatAnswer(field, answer)
@@ -530,7 +530,7 @@ export function PaginatedFormEntriesTable({
                           </TableCell>
                         )
                       } else {
-                        const field = formFields.find(f => f.id === column.id)
+                        const field = (formFields || []).find(f => f.id === column.id)
                         return (
                           <TableCell key={column.id} className="text-sm">
                             {field ? formatAnswer(field, entry.answers[field.id]) : "-"}
@@ -610,7 +610,7 @@ export function PaginatedFormEntriesTable({
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
-              {formFields.map((field) => (
+              {(formFields || []).map((field) => (
                 <div key={field.id} className="border-b pb-3">
                   <h4 className="font-medium text-sm text-gray-700 mb-1">
                     {field.label}

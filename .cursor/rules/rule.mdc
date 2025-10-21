@@ -1,0 +1,36 @@
+---
+alwaysApply: true
+---
+## UI Components
+- Use shadcn/ui components from `@/components/ui/`
+- Use Radix UI when shadcn/ui doesn't have the component
+
+## Server Actions
+- Prefer server actions over API routes
+- API routes only for webhooks, file uploads, public endpoints
+- Place actions in `lib/actions.ts`
+
+## Code Quality
+- Avoid duplication - extract reusable logic
+- Use TypeScript strictly (no `any`)
+- Proper error handling with try-catch
+
+## File Organization
+- Components in `components/forms/`, `components/ui/`
+- Server actions in `lib/actions.ts`
+- Utils in `lib/utils.ts`
+
+## Database
+- Use Prisma for all DB operations
+- Validate data client & server side
+
+## Security
+- Auth checks in server actions
+- Sanitize inputs
+
+## Performance
+- Use React Server Components when possible instead of APIs only on webhooks etc..
+- Dynamic imports for code splitting
+
+## Client Components
+- Add "use client" for interactive libraries (DND-kit, React Query, forms, animations)

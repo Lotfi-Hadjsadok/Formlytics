@@ -48,6 +48,26 @@ export default async function FormResponsesPage({ params }: FormResponsesPagePro
     notFound()
   }
 
+  // Extract all fields from the form (handles both single-step and multistep forms)
+  const getAllFormFields = () => {
+    if (form.isMultistep && form.steps) {
+      // For multistep forms, extract fields from all steps
+      const allFields: any[] = []
+      ;(form.steps as any[]).forEach((step: any) => {
+        if (step.fields) {
+          allFields.push(...step.fields)
+        }
+      })
+      return allFields
+    } else if (form.fields) {
+      // For single-step forms, use the fields directly
+      return form.fields as any[]
+    }
+    return []
+  }
+
+  const formFields = getAllFormFields()
+
   return (
     <div className="space-y-6">
       {/* Breadcrumbs */}
@@ -94,7 +114,7 @@ export default async function FormResponsesPage({ params }: FormResponsesPagePro
         <CardContent>
           <PaginatedFormEntriesTableClient 
             formId={form.id}
-            formFields={form.fields as any}
+            formFields={formFields}
             initialEntries={form.entries}
             initialTotalCount={form._count.entries}
           />
