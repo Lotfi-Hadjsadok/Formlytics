@@ -22,42 +22,60 @@ export function StepProgressIndicator({
   const progress = ((currentStep + 1) / totalSteps) * 100
 
   const renderNumbers = () => (
-    <div className="flex items-center justify-center space-x-2">
+    <div className="flex items-center justify-between w-full">
       {Array.from({ length: totalSteps }, (_, index) => (
-        <div
-          key={index}
-          className={cn(
-            "flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold transition-all duration-300",
-            index <= currentStep
-              ? "text-white"
-              : "text-gray-500 bg-gray-200"
+        <div key={index} className="flex items-center flex-1">
+          <div
+            className={cn(
+              "flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold transition-all duration-300",
+              index <= currentStep
+                ? "text-white"
+                : "text-gray-500 bg-gray-200"
+            )}
+            style={{
+              backgroundColor: index <= currentStep ? primaryColor : undefined
+            }}
+          >
+            {index + 1}
+          </div>
+          {index < totalSteps - 1 && (
+            <div 
+              className="flex-1 h-0.5 mx-2 transition-all duration-300"
+              style={{
+                backgroundColor: index < currentStep ? primaryColor : '#e5e7eb'
+              }}
+            />
           )}
-          style={{
-            backgroundColor: index <= currentStep ? primaryColor : undefined
-          }}
-        >
-          {index + 1}
         </div>
       ))}
     </div>
   )
 
   const renderLetters = () => (
-    <div className="flex items-center justify-center space-x-2">
+    <div className="flex items-center justify-between w-full">
       {Array.from({ length: totalSteps }, (_, index) => (
-        <div
-          key={index}
-          className={cn(
-            "flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold transition-all duration-300",
-            index <= currentStep
-              ? "text-white"
-              : "text-gray-500 bg-gray-200"
+        <div key={index} className="flex items-center flex-1">
+          <div
+            className={cn(
+              "flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold transition-all duration-300",
+              index <= currentStep
+                ? "text-white"
+                : "text-gray-500 bg-gray-200"
+            )}
+            style={{
+              backgroundColor: index <= currentStep ? primaryColor : undefined
+            }}
+          >
+            {String.fromCharCode(65 + index)}
+          </div>
+          {index < totalSteps - 1 && (
+            <div 
+              className="flex-1 h-0.5 mx-2 transition-all duration-300"
+              style={{
+                backgroundColor: index < currentStep ? primaryColor : '#e5e7eb'
+              }}
+            />
           )}
-          style={{
-            backgroundColor: index <= currentStep ? primaryColor : undefined
-          }}
-        >
-          {String.fromCharCode(65 + index)}
         </div>
       ))}
     </div>

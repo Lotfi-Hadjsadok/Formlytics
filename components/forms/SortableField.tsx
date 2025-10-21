@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
 import { 
   DropdownMenu, 
@@ -199,12 +200,10 @@ export function SortableField({
             )}
 
             <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-              <input
-                type="checkbox"
+              <Switch
                 id={`required-${field.id}`}
                 checked={field.required}
-                onChange={(e) => updateField(field.id, { required: e.target.checked })}
-                className="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500"
+                onCheckedChange={(checked) => updateField(field.id, { required: checked })}
               />
               <Label htmlFor={`required-${field.id}`} className="text-sm font-medium text-gray-700">
                 Required field

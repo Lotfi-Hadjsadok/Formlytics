@@ -20,6 +20,8 @@ import { SingleStepFormBuilder } from "./SingleStepFormBuilder"
 import { MultiStepFormBuilder } from "./MultiStepFormBuilder"
 import { FormPreview } from "./FormPreview"
 import { FormStylingSettings } from "./FormStylingSettings"
+import { Collapsible } from "@/components/ui/collapsible"
+import { Switch } from "@/components/ui/switch"
 
 interface FormField {
   id: string
@@ -90,7 +92,7 @@ export function FormBuilder({ formId, initialData }: FormBuilderProps) {
     formTypeSelected: false,
     settings: {
       allowMultipleSubmissions: false,
-      showProgressBar: false,
+      showProgressBar: true,
       stepUI: 'numbers' as const,
       submitButtonText: 'Submit'
     },
@@ -124,7 +126,7 @@ export function FormBuilder({ formId, initialData }: FormBuilderProps) {
             fields: isMultistep ? [] : ((form.fields as any[]) || []),
             settings: {
               allowMultipleSubmissions: (form.settings as any)?.allowMultipleSubmissions || false,
-              showProgressBar: (form.settings as any)?.showProgressBar || false,
+              showProgressBar: (form.settings as any)?.showProgressBar !== false, // Default to true unless explicitly false
               stepUI: (form.settings as any)?.stepUI || 'numbers',
               submitButtonText: (form.settings as any)?.submitButtonText || 'Submit'
             },
@@ -229,15 +231,13 @@ export function FormBuilder({ formId, initialData }: FormBuilderProps) {
   return (
     <div className="space-y-6">
       {/* Form Header */}
-      <Card className="shadow-[0_0_5px_0_rgba(0,0,0,0.1)] border-0 bg-gradient-to-r ">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-xl font-semibold text-gray-800 flex items-center">
-            <Type className="h-5 w-5 mr-2 text-blue-600" />
-            Form Details
-          </CardTitle>
-          <p className="text-sm text-gray-600 mt-1">Configure your form's basic information</p>
-        </CardHeader>
-        <CardContent className="space-y-6">
+      <Collapsible
+        title="Form Details"
+        description="Configure your form's basic information"
+        icon={<Type className="h-5 w-5 text-blue-600" />}
+        defaultOpen={true}
+      >
+        <div className="space-y-6">
           <div className="space-y-3">
             <Label htmlFor="title" className="text-sm font-semibold text-gray-700">Form Title</Label>
             <Input
@@ -259,303 +259,312 @@ export function FormBuilder({ formId, initialData }: FormBuilderProps) {
               className="resize-none"
             />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </Collapsible>
 
       {/* Form Type Selection */}
       {!formData.formTypeSelected && (
-        <Card className="shadow-sm border-0">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-xl font-semibold text-gray-800 flex items-center">
-              <Layout className="h-5 w-5 mr-2 text-blue-600" />
-              Choose Form Type
-            </CardTitle>
-            <p className="text-sm text-gray-600 mt-1">Select how you want to structure your form</p>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Normal Form */}
-              <div 
-                className="p-6 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-blue-300 hover:shadow-lg transition-all duration-200 group"
-                onClick={() => setFormData(prev => ({ 
-                  ...prev, 
-                  formTypeSelected: true, 
-                  isMultistep: false 
-                }))}
-              >
-                <div className="text-center space-y-4">
-                  <div className="w-16 h-16 mx-auto bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-blue-200 transition-colors">
-                    <Layout className="h-8 w-8 text-blue-600" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">Normal Form</h3>
-                    <p className="text-sm text-gray-600">
-                      Create a single-page form with all fields visible at once. Perfect for shorter forms and quick data collection.
-                    </p>
-                  </div>
-                  <div className="space-y-2 text-xs text-gray-500">
-                    <div className="flex items-center justify-center space-x-2">
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <span>All fields on one page</span>
-                    </div>
-                    <div className="flex items-center justify-center space-x-2">
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <span>Simple and straightforward</span>
-                    </div>
-                    <div className="flex items-center justify-center space-x-2">
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <span>Quick to complete</span>
-                    </div>
-                  </div>
+        <Collapsible
+          title="Choose Form Type"
+          description="Select how you want to structure your form"
+          icon={<Layout className="h-5 w-5 text-blue-600" />}
+          defaultOpen={true}
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Normal Form */}
+            <div 
+              className="p-6 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-blue-300 hover:shadow-lg transition-all duration-200 group"
+              onClick={() => setFormData(prev => ({ 
+                ...prev, 
+                formTypeSelected: true, 
+                isMultistep: false 
+              }))}
+            >
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 mx-auto bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                  <Layout className="h-8 w-8 text-blue-600" />
                 </div>
-              </div>
-
-              {/* Multistep Form */}
-              <div 
-                className="p-6 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-indigo-300 hover:shadow-lg transition-all duration-200 group"
-                onClick={() => setFormData(prev => ({ 
-                  ...prev, 
-                  formTypeSelected: true, 
-                  isMultistep: true 
-                }))}
-              >
-                <div className="text-center space-y-4">
-                  <div className="w-16 h-16 mx-auto bg-indigo-100 rounded-full flex items-center justify-center group-hover:bg-indigo-200 transition-colors">
-                    <Layout className="h-8 w-8 text-indigo-600" />
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">Normal Form</h3>
+                  <p className="text-sm text-gray-600">
+                    Create a single-page form with all fields visible at once. Perfect for shorter forms and quick data collection.
+                  </p>
+                </div>
+                <div className="space-y-2 text-xs text-gray-500">
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span>All fields on one page</span>
                   </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">Multistep Form</h3>
-                    <p className="text-sm text-gray-600">
-                      Break your form into multiple steps or pages. Great for longer forms and better user experience.
-                    </p>
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span>Simple and straightforward</span>
                   </div>
-                  <div className="space-y-2 text-xs text-gray-500">
-                    <div className="flex items-center justify-center space-x-2">
-                      <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
-                      <span>Multiple steps/pages</span>
-                    </div>
-                    <div className="flex items-center justify-center space-x-2">
-                      <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
-                      <span>Progress tracking</span>
-                    </div>
-                    <div className="flex items-center justify-center space-x-2">
-                      <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
-                      <span>Better for long forms</span>
-                    </div>
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span>Quick to complete</span>
                   </div>
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
+
+            {/* Multistep Form */}
+            <div 
+              className="p-6 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-indigo-300 hover:shadow-lg transition-all duration-200 group"
+              onClick={() => setFormData(prev => ({ 
+                ...prev, 
+                formTypeSelected: true, 
+                isMultistep: true 
+              }))}
+            >
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 mx-auto bg-indigo-100 rounded-full flex items-center justify-center group-hover:bg-indigo-200 transition-colors">
+                  <Layout className="h-8 w-8 text-indigo-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">Multistep Form</h3>
+                  <p className="text-sm text-gray-600">
+                    Break your form into multiple steps or pages. Great for longer forms and better user experience.
+                  </p>
+                </div>
+                <div className="space-y-2 text-xs text-gray-500">
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
+                    <span>Multiple steps/pages</span>
+                  </div>
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
+                    <span>Progress tracking</span>
+                  </div>
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
+                    <span>Better for long forms</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Collapsible>
       )}
 
       {/* Form Fields */}
       {formData.formTypeSelected && (
-        formData.isMultistep ? (
-          <MultiStepFormBuilder 
-            steps={formData.steps}
-            onStepsChange={(steps) => setFormData(prev => ({ ...prev, steps, isMultistep: steps.length > 0 }))}
-          />
-        ) : (
-          <SingleStepFormBuilder 
-            fields={formData.fields}
-            onFieldsChange={(fields) => setFormData(prev => ({ ...prev, fields }))}
-          />
-        )
+        <Collapsible
+          title={formData.isMultistep ? "Form Steps" : "Form Fields"}
+          description={formData.isMultistep ? "Organize your form into steps for better user experience" : "Build your form by adding and configuring fields"}
+          icon={<Layout className="h-5 w-5 text-green-600" />}
+          defaultOpen={true}
+        >
+          {formData.isMultistep ? (
+            <MultiStepFormBuilder 
+              steps={formData.steps}
+              onStepsChange={(steps) => setFormData(prev => ({ ...prev, steps, isMultistep: steps.length > 0 }))}
+            />
+          ) : (
+            <SingleStepFormBuilder 
+              fields={formData.fields}
+              onFieldsChange={(fields) => setFormData(prev => ({ ...prev, fields }))}
+            />
+          )}
+        </Collapsible>
       )}
 
 
       {/* Form Styling */}
       {formData.formTypeSelected && (
-        <FormStylingSettings 
-          styling={formData.styling}
-          onStylingChange={(styling) => setFormData(prev => ({ ...prev, styling }))}
-        />
+        <Collapsible
+          title="Form Styling"
+          description="Customize the appearance of your form"
+          icon={<Settings className="h-5 w-5 text-purple-600" />}
+          defaultOpen={true}
+        >
+          <FormStylingSettings 
+            styling={formData.styling}
+            onStylingChange={(styling) => setFormData(prev => ({ ...prev, styling }))}
+          />
+        </Collapsible>
       )}
 
       {/* Thank You Page Settings */}
       {formData.formTypeSelected && (
-        <Card className="shadow-sm border-0">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-xl font-semibold text-gray-800 flex items-center">
-            <Settings className="h-5 w-5 mr-2 text-orange-600" />
-            Thank You Page
-          </CardTitle>
-          <p className="text-sm text-gray-600 mt-1">Customize what users see after submitting the form</p>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-3">
-            <Label className="text-sm font-semibold text-gray-700">Thank You Icon (Emoji)</Label>
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center text-2xl">
-                {formData.thankYouPage.icon || '🎉'}
+        <Collapsible
+          title="Thank You Page"
+          description="Customize what users see after submitting the form"
+          icon={<Settings className="h-5 w-5 text-orange-600" />}
+          defaultOpen={true}
+        >
+          <div className="space-y-6">
+            <div className="space-y-3">
+              <Label className="text-sm font-semibold text-gray-700">Thank You Icon (Emoji)</Label>
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center text-2xl">
+                  {formData.thankYouPage.icon || '🎉'}
+                </div>
+                <Input
+                  value={formData.thankYouPage.icon || ''}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    thankYouPage: { ...prev.thankYouPage, icon: e.target.value }
+                  }))}
+                  placeholder="🎉"
+                  maxLength={2}
+                  className="h-12 text-lg"
+                />
               </div>
+              <p className="text-xs text-gray-500">Enter an emoji to display on the thank you page</p>
+            </div>
+
+            <div className="space-y-3">
+              <Label className="text-sm font-semibold text-gray-700">Thank You Title</Label>
               <Input
-                value={formData.thankYouPage.icon || ''}
+                value={formData.thankYouPage.title || ''}
                 onChange={(e) => setFormData(prev => ({
                   ...prev,
-                  thankYouPage: { ...prev.thankYouPage, icon: e.target.value }
+                  thankYouPage: { ...prev.thankYouPage, title: e.target.value }
                 }))}
-                placeholder="🎉"
-                maxLength={2}
+                placeholder="Thank you!"
                 className="h-12 text-lg"
               />
+              <p className="text-xs text-gray-500">Custom title for the thank you page</p>
             </div>
-            <p className="text-xs text-gray-500">Enter an emoji to display on the thank you page</p>
-          </div>
 
-          <div className="space-y-3">
-            <Label className="text-sm font-semibold text-gray-700">Thank You Title</Label>
-            <Input
-              value={formData.thankYouPage.title || ''}
-              onChange={(e) => setFormData(prev => ({
-                ...prev,
-                thankYouPage: { ...prev.thankYouPage, title: e.target.value }
-              }))}
-              placeholder="Thank you!"
-              className="h-12 text-lg"
-            />
-            <p className="text-xs text-gray-500">Custom title for the thank you page</p>
+            <div className="space-y-3">
+              <Label className="text-sm font-semibold text-gray-700">Thank You Message</Label>
+              <Textarea
+                value={formData.thankYouPage.text || ''}
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  thankYouPage: { ...prev.thankYouPage, text: e.target.value }
+                }))}
+                placeholder="Your form has been submitted successfully. We'll get back to you soon!"
+                rows={4}
+                className="resize-none"
+              />
+              <p className="text-xs text-gray-500">Custom message to show after form submission</p>
+            </div>
           </div>
-
-          <div className="space-y-3">
-            <Label className="text-sm font-semibold text-gray-700">Thank You Message</Label>
-            <Textarea
-              value={formData.thankYouPage.text || ''}
-              onChange={(e) => setFormData(prev => ({
-                ...prev,
-                thankYouPage: { ...prev.thankYouPage, text: e.target.value }
-              }))}
-              placeholder="Your form has been submitted successfully. We'll get back to you soon!"
-              rows={4}
-              className="resize-none"
-            />
-            <p className="text-xs text-gray-500">Custom message to show after form submission</p>
-          </div>
-        </CardContent>
-        </Card>
+        </Collapsible>
       )}
 
       {/* Form Preview */}
       {formData.formTypeSelected && (
-        <FormPreview formData={formData} />
+        <Collapsible
+          title="Form Preview"
+          description="Preview how your form will look to users"
+          icon={<Layout className="h-5 w-5 text-blue-600" />}
+          defaultOpen={true}
+        >
+          <FormPreview formData={formData} />
+        </Collapsible>
       )}
 
       {/* Form Settings */}
       {formData.formTypeSelected && (
-        <Card className="shadow-sm border-0">
-        <CardHeader className="pb-4">
-          <CardTitle className="text-xl font-semibold text-gray-800 flex items-center">
-            <Settings className="h-5 w-5 mr-2 text-gray-600" />
-            Form Settings
-          </CardTitle>
-          <p className="text-sm text-gray-600 mt-1">Configure form behavior and submission options</p>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-3">
-            <Label className="text-sm font-semibold text-gray-700">Submit Button Text</Label>
-            <Input
-              value={formData.settings.submitButtonText}
-              onChange={(e) => setFormData(prev => ({
-                ...prev,
-                settings: { ...prev.settings, submitButtonText: e.target.value }
-              }))}
-              placeholder="Submit"
-              className="h-12"
-            />
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg">
-              <input
-                type="checkbox"
-                id="allowMultipleSubmissions"
-                checked={formData.settings.allowMultipleSubmissions}
+        <Collapsible
+          title="Form Settings"
+          description="Configure form behavior and submission options"
+          icon={<Settings className="h-5 w-5 text-gray-600" />}
+          defaultOpen={true}
+        >
+          <div className="space-y-6">
+            <div className="space-y-3">
+              <Label className="text-sm font-semibold text-gray-700">Submit Button Text</Label>
+              <Input
+                value={formData.settings.submitButtonText}
                 onChange={(e) => setFormData(prev => ({
                   ...prev,
-                  settings: { ...prev.settings, allowMultipleSubmissions: e.target.checked }
+                  settings: { ...prev.settings, submitButtonText: e.target.value }
                 }))}
-                className="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500"
+                placeholder="Submit"
+                className="h-12"
               />
-              <div>
-                <Label htmlFor="allowMultipleSubmissions" className="text-sm font-medium text-gray-700">
-                  Allow multiple submissions
-                </Label>
-                <p className="text-xs text-gray-500">Users can submit the form multiple times</p>
-              </div>
             </div>
 
-            <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg">
-              <input
-                type="checkbox"
-                id="showProgressBar"
-                checked={formData.settings.showProgressBar && formData.isMultistep}
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  settings: { ...prev.settings, showProgressBar: e.target.checked }
-                }))}
-                disabled={!formData.isMultistep}
-                className="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 disabled:opacity-50"
-              />
-              <div>
-                <Label htmlFor="showProgressBar" className="text-sm font-medium text-gray-700">
-                  Show progress bar
-                </Label>
-                <p className="text-xs text-gray-500">
-                  {formData.isMultistep 
-                    ? "Display completion progress to users (only available for multistep forms)"
-                    : "Enable multistep form to use progress bar"
-                  }
-                </p>
-              </div>
-            </div>
-
-            {/* Step UI Configuration - Only show for multistep forms */}
-            {formData.isMultistep && (
-              <div className="space-y-3">
-                <Label className="text-sm font-semibold text-gray-700">Step Progress Style</Label>
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    { value: 'numbers', label: 'Numbers', description: '1, 2, 3...' },
-                    { value: 'letters', label: 'Letters', description: 'A, B, C...' },
-                    { value: 'percentage', label: 'Percentage', description: 'Step 1 of 3 (33%)' },
-                    { value: 'bar', label: 'Simple Bar', description: 'Progress bar only' }
-                  ].map((option) => (
-                    <div
-                      key={option.value}
-                      className={`p-3 border rounded-lg cursor-pointer transition-all ${
-                        formData.settings.stepUI === option.value
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
-                      onClick={() => setFormData(prev => ({
-                        ...prev,
-                        settings: { ...prev.settings, stepUI: option.value as any }
-                      }))}
-                    >
-                      <div className="flex items-center space-x-2">
-                        <input
-                          type="radio"
-                          name="stepUI"
-                          value={option.value}
-                          checked={formData.settings.stepUI === option.value}
-                          onChange={() => {}}
-                          className="w-4 h-4 text-blue-600"
-                        />
-                        <div>
-                          <div className="text-sm font-medium text-gray-700">{option.label}</div>
-                          <div className="text-xs text-gray-500">{option.description}</div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg">
+                <Switch
+                  id="allowMultipleSubmissions"
+                  checked={formData.settings.allowMultipleSubmissions}
+                  onCheckedChange={(checked) => setFormData(prev => ({
+                    ...prev,
+                    settings: { ...prev.settings, allowMultipleSubmissions: checked }
+                  }))}
+                />
+                <div>
+                  <Label htmlFor="allowMultipleSubmissions" className="text-sm font-medium text-gray-700">
+                    Allow multiple submissions
+                  </Label>
+                  <p className="text-xs text-gray-500">Users can submit the form multiple times</p>
                 </div>
               </div>
-            )}
+
+              <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg">
+                <Switch
+                  id="showProgressBar"
+                  checked={formData.settings.showProgressBar !== false && formData.isMultistep}
+                  onCheckedChange={(checked) => setFormData(prev => ({
+                    ...prev,
+                    settings: { ...prev.settings, showProgressBar: checked }
+                  }))}
+                  disabled={!formData.isMultistep}
+                />
+                <div>
+                  <Label htmlFor="showProgressBar" className="text-sm font-medium text-gray-700">
+                    Show progress bar
+                  </Label>
+                  <p className="text-xs text-gray-500">
+                    {formData.isMultistep 
+                      ? "Display completion progress to users (only available for multistep forms)"
+                      : "Enable multistep form to use progress bar"
+                    }
+                  </p>
+                </div>
+              </div>
+
+              {/* Step UI Configuration - Only show for multistep forms */}
+              {formData.isMultistep && (
+                <div className="space-y-3">
+                  <Label className="text-sm font-semibold text-gray-700">Step Progress Style</Label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { value: 'numbers', label: 'Numbers', description: '1, 2, 3...' },
+                      { value: 'letters', label: 'Letters', description: 'A, B, C...' },
+                      { value: 'percentage', label: 'Percentage', description: 'Step 1 of 3 (33%)' },
+                      { value: 'bar', label: 'Simple Bar', description: 'Progress bar only' }
+                    ].map((option) => (
+                      <div
+                        key={option.value}
+                        className={`p-3 border rounded-lg cursor-pointer transition-all ${
+                          formData.settings.stepUI === option.value
+                            ? 'border-blue-500 bg-blue-50'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                        onClick={() => setFormData(prev => ({
+                          ...prev,
+                          settings: { ...prev.settings, stepUI: option.value as any }
+                        }))}
+                      >
+                        <div className="flex items-center space-x-2">
+                          <input
+                            type="radio"
+                            name="stepUI"
+                            value={option.value}
+                            checked={formData.settings.stepUI === option.value}
+                            onChange={() => {}}
+                            className="w-4 h-4 text-blue-600"
+                          />
+                          <div>
+                            <div className="text-sm font-medium text-gray-700">{option.label}</div>
+                            <div className="text-xs text-gray-500">{option.description}</div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        </Collapsible>
       )}
 
       {/* Actions */}

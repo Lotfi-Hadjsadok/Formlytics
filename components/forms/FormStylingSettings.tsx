@@ -3,7 +3,6 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -39,15 +38,7 @@ export function FormStylingSettings({ styling, onStylingChange }: FormStylingSet
   }
 
   return (
-    <Card className="shadow-sm border-0">
-      <CardHeader className="pb-4">
-        <CardTitle className="text-xl font-semibold text-gray-800 flex items-center">
-          <Palette className="h-5 w-5 mr-2 text-purple-600" />
-          Form Styling
-        </CardTitle>
-        <p className="text-sm text-gray-600 mt-1">Customize the appearance of your form</p>
-      </CardHeader>
-      <CardContent className="space-y-6">
+    <div className="space-y-6">
         {/* Color Palette Section */}
         <div className="space-y-6">
           <div className="flex items-center space-x-2">
@@ -325,7 +316,6 @@ export function FormStylingSettings({ styling, onStylingChange }: FormStylingSet
             </Button>
           </div>
         </div>
-      </CardContent>
-    </Card>
+    </div>
   )
 }

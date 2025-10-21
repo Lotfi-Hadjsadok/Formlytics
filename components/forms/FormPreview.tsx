@@ -4,7 +4,6 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import { DatePicker } from "@/components/ui/date-picker"
 import { 
@@ -122,15 +121,7 @@ export function FormPreview({ formData }: FormPreviewProps) {
   }
 
   return (
-    <Card className="shadow-sm border-0">
-      <CardHeader className="pb-4">
-        <CardTitle className="text-xl font-semibold text-gray-800 flex items-center">
-          <Eye className="h-5 w-5 mr-2 text-indigo-600" />
-          Form Preview
-        </CardTitle>
-        <p className="text-sm text-gray-600 mt-1">Preview how your form will look to users</p>
-      </CardHeader>
-      <CardContent>
+    <div className="space-y-4">
         {/* Preview Tabs */}
         <div className="mb-6">
           <div className="flex space-x-1 bg-gray-100 p-1 rounded-xl">
@@ -507,7 +498,6 @@ export function FormPreview({ formData }: FormPreviewProps) {
             </div>
           </div>
         )}
-      </CardContent>
-    </Card>
+    </div>
   )
 }

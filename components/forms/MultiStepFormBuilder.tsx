@@ -4,9 +4,9 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
+import { Card, CardHeader, CardContent } from "@/components/ui/card"
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -18,6 +18,7 @@ import { useSensor, useSensors, PointerSensor, KeyboardSensor, DragEndEvent, Dnd
 import { SortableContext, verticalListSortingStrategy, sortableKeyboardCoordinates } from '@dnd-kit/sortable'
 import { arrayMove } from '@dnd-kit/sortable'
 import { SortableStepField } from "./SortableStepField"
+import { Collapsible } from "@/components/ui/collapsible"
 
 interface FormField {
   id: string
@@ -234,38 +235,32 @@ export function MultiStepFormBuilder({ steps, onStepsChange }: MultiStepFormBuil
   }
 
   return (
-    <Card className="shadow-sm border-0">
-      <CardHeader className="pb-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-xl font-semibold text-gray-800 flex items-center">
-              <Layout className="h-5 w-5 mr-2 text-green-600" />
-              Form Steps
-            </CardTitle>
-            <p className="text-sm text-gray-600 mt-1">
-              Organize your form into steps for better user experience
-            </p>
-          </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button className="bg-green-600 hover:bg-green-700 text-white shadow-sm">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Step
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56">
-              <DropdownMenuItem
-                onClick={addStep}
-                className="cursor-pointer"
-              >
-                <span className="mr-3 text-lg">📋</span>
-                <span className="font-medium">Add Step</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-800">Steps</h3>
+          <p className="text-sm text-gray-600 mt-1">
+            Organize your form into steps for better user experience
+          </p>
         </div>
-      </CardHeader>
-      <CardContent>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button className="bg-green-600 hover:bg-green-700 text-white shadow-sm">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Step
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56">
+            <DropdownMenuItem
+              onClick={addStep}
+              className="cursor-pointer"
+            >
+              <span className="mr-3 text-lg">📋</span>
+              <span className="font-medium">Add Step</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
         {steps.length === 0 ? (
           <div className="text-center py-12">
             <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
@@ -285,38 +280,53 @@ export function MultiStepFormBuilder({ steps, onStepsChange }: MultiStepFormBuil
         ) : (
           <div className="space-y-6">
             {steps.map((step, stepIndex) => (
-              <Card key={step.id} className="border-l-4 border-l-indigo-500">
-                <CardHeader className="pb-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-200">
-                        Step {stepIndex + 1}
-                      </Badge>
-                      <Input
-                        value={step.title}
-                        onChange={(e) => updateStep(step.id, { title: e.target.value })}
-                        placeholder="Step title"
-                        className="h-10 font-semibold"
-                      />
+              <Collapsible
+                key={step.id}
+                title={`Step ${stepIndex + 1}: ${step.title || 'Untitled Step'}`}
+                description={step.description || 'Configure fields for this step'}
+                icon={<Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-200">Step {stepIndex + 1}</Badge>}
+                defaultOpen={true}
+                className="border-l-4 border-l-indigo-500"
+              >
+                <div className="space-y-6">
+                  {/* Step Configuration */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-semibold text-gray-700">Step Configuration</h4>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeStep(step.id)}
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeStep(step.id)}
-                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    
+                    <div className="space-y-3">
+                      <div>
+                        <Label className="text-sm font-medium text-gray-700">Step Title</Label>
+                        <Input
+                          value={step.title}
+                          onChange={(e) => updateStep(step.id, { title: e.target.value })}
+                          placeholder="Step title"
+                          className="h-10 font-semibold"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-gray-700">Step Description</Label>
+                        <Textarea
+                          value={step.description || ''}
+                          onChange={(e) => updateStep(step.id, { description: e.target.value })}
+                          placeholder="Step description (optional)"
+                          rows={2}
+                          className="resize-none"
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <Textarea
-                    value={step.description || ''}
-                    onChange={(e) => updateStep(step.id, { description: e.target.value })}
-                    placeholder="Step description (optional)"
-                    rows={2}
-                    className="resize-none mt-2"
-                  />
-                </CardHeader>
-                <CardContent>
+
+                  {/* Fields Section */}
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <h4 className="text-sm font-semibold text-gray-700">Fields in this step</h4>
@@ -386,12 +396,11 @@ export function MultiStepFormBuilder({ steps, onStepsChange }: MultiStepFormBuil
                       </DndContext>
                     )}
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </Collapsible>
             ))}
           </div>
         )}
-      </CardContent>
-    </Card>
+    </div>
   )
 }

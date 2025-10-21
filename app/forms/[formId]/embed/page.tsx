@@ -40,25 +40,14 @@ interface FormStep {
 interface Form {
   id: string
   title: string
-  description?: string
-  fields?: FormField[]
-  steps?: FormStep[]
+  description?: string | null
+  fields?: any
+  steps?: any
   isMultistep?: boolean
-  settings: {
-    allowMultipleSubmissions: boolean
-    requireEmail: boolean
-    showProgressBar: boolean
-    stepUI?: 'numbers' | 'letters' | 'percentage' | 'bar'
-    submitButtonText: string
-  }
-  styling: {
-    backgroundColor: string
-    textColor: string
-    primaryColor: string
-    fontFamily: string
-    borderRadius: string
-  }
-  embedding?: EmbeddingSettings
+  settings: any
+  styling: any
+  thankYouPage?: any
+  embedding?: any
   _count: {
     entries: number
   }
@@ -95,7 +84,7 @@ export default function EmbedFormPage() {
     
     // If origin restrictions are enabled, validate the origin
     if (embeddingSettings.requireOrigin && embeddingSettings.allowedOrigins?.length) {
-      const allowedOrigins = embeddingSettings.allowedOrigins
+      const allowedOrigins = embeddingSettings.allowedOrigins as string[]
       const currentOrigin = origin || (referrer ? new URL(referrer).origin : null)
       
       if (!currentOrigin) {
@@ -103,7 +92,7 @@ export default function EmbedFormPage() {
         return
       }
 
-      const isAllowed = allowedOrigins.some(allowedOrigin => {
+      const isAllowed = allowedOrigins.some((allowedOrigin: string) => {
         // Support wildcard subdomains
         if (allowedOrigin.startsWith('*.')) {
           const domain = allowedOrigin.substring(2)
@@ -230,7 +219,7 @@ export default function EmbedFormPage() {
 
   return (
     <FormRenderer
-      form={form}
+      form={form as any}
       onSubmit={handleSubmit}
       submitting={submitting}
       showHeader={false}

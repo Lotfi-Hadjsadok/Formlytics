@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -157,41 +156,35 @@ export function SingleStepFormBuilder({ fields, onFieldsChange }: SingleStepForm
   }
 
   return (
-    <Card className="shadow-sm border-0">
-      <CardHeader className="pb-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <CardTitle className="text-xl font-semibold text-gray-800 flex items-center">
-              <Layout className="h-5 w-5 mr-2 text-green-600" />
-              Form Fields
-            </CardTitle>
-            <p className="text-sm text-gray-600 mt-1">
-              Build your form by adding and configuring fields
-            </p>
-          </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button className="bg-green-600 hover:bg-green-700 text-white shadow-sm">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Field
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56">
-              {fieldTypes.map((fieldType) => (
-                <DropdownMenuItem
-                  key={fieldType.value}
-                  onClick={() => addField(fieldType.value as FormField['type'])}
-                  className="cursor-pointer"
-                >
-                  <span className="mr-3 text-lg">{fieldType.icon}</span>
-                  <span className="font-medium">{fieldType.label}</span>
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-800">Fields</h3>
+          <p className="text-sm text-gray-600 mt-1">
+            Build your form by adding and configuring fields
+          </p>
         </div>
-      </CardHeader>
-      <CardContent>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button className="bg-green-600 hover:bg-green-700 text-white shadow-sm">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Field
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56">
+            {fieldTypes.map((fieldType) => (
+              <DropdownMenuItem
+                key={fieldType.value}
+                onClick={() => addField(fieldType.value as FormField['type'])}
+                className="cursor-pointer"
+              >
+                <span className="mr-3 text-lg">{fieldType.icon}</span>
+                <span className="font-medium">{fieldType.label}</span>
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
         {fields.length === 0 ? (
           <div className="text-center py-12">
             <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
@@ -248,7 +241,6 @@ export function SingleStepFormBuilder({ fields, onFieldsChange }: SingleStepForm
             </SortableContext>
           </DndContext>
         )}
-      </CardContent>
-    </Card>
+    </div>
   )
 }

@@ -42,6 +42,11 @@ interface FormField {
   }
 }
 
+interface EmbeddingSettings {
+  allowedOrigins?: string[]
+  requireOrigin?: boolean
+}
+
 interface FormStep {
   id: string
   title: string
@@ -49,38 +54,17 @@ interface FormStep {
   fields: FormField[]
 }
 
-interface EmbeddingSettings {
-  allowedOrigins?: string[]
-  requireOrigin?: boolean
-}
-
 interface Form {
   id: string
   title: string
-  description?: string
-  fields?: FormField[]
-  steps?: FormStep[]
+  description?: string | null
+  fields?: any
+  steps?: any
   isMultistep?: boolean
-  settings: {
-    allowMultipleSubmissions: boolean
-    requireEmail: boolean
-    showProgressBar: boolean
-    stepUI?: 'numbers' | 'letters' | 'percentage' | 'bar'
-    submitButtonText: string
-  }
-  styling: {
-    backgroundColor: string
-    textColor: string
-    primaryColor: string
-    fontFamily: string
-    borderRadius: string
-  }
-  thankYouPage?: {
-    icon?: string
-    title?: string
-    text?: string
-  }
-  embedding?: EmbeddingSettings
+  settings: any
+  styling: any
+  thankYouPage?: any
+  embedding?: any
   _count: {
     entries: number
   }
@@ -130,7 +114,7 @@ export default function FormPage() {
       
       // Load embedding settings
       if (formData.embedding) {
-        setEmbeddingSettings(formData.embedding)
+        setEmbeddingSettings(formData.embedding as EmbeddingSettings)
       }
     } catch (err) {
       setError('Failed to load form')
@@ -513,7 +497,7 @@ export default FormlyticsForm;`}
 
         {/* Form */}
         <FormRenderer 
-          form={form}
+          form={form as any}
           onSubmit={handleFormSubmit}
           submitting={submitting}
           showHeader={true}

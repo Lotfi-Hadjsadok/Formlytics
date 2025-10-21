@@ -51,7 +51,6 @@ interface Form {
   isMultistep?: boolean
   settings: {
     allowMultipleSubmissions: boolean
-    requireEmail: boolean
     showProgressBar: boolean
     stepUI?: 'numbers' | 'letters' | 'percentage' | 'bar'
     submitButtonText: string
@@ -306,23 +305,13 @@ export function FormRenderer({
         )}
 
         {/* Step Progress Indicator for Multistep Forms */}
-        {form.isMultistep && form.steps && form.settings?.showProgressBar && (
+        {form.isMultistep && form.steps && (form.settings?.showProgressBar !== false) && (
           <StepProgressIndicator
             currentStep={currentStep}
             totalSteps={form.steps.length}
             stepUI={form.settings?.stepUI || 'numbers'}
             primaryColor={form.styling?.primaryColor || '#3b82f6'}
           />
-        )}
-
-        {/* Step Header for Multistep Forms */}
-        {form.isMultistep && form.steps && form.steps[currentStep] && (
-          <div className="mb-6 border-l-4 border-l-blue-500 pl-4">
-            <h2 className="text-xl font-semibold mb-2">{form.steps[currentStep].title}</h2>
-            {form.steps[currentStep].description && (
-              <p className="text-gray-600">{form.steps[currentStep].description}</p>
-            )}
-          </div>
         )}
 
         {/* Form */}
