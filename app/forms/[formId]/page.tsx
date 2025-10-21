@@ -42,6 +42,13 @@ interface FormField {
   }
 }
 
+interface FormStep {
+  id: string
+  title: string
+  description?: string
+  fields: FormField[]
+}
+
 interface EmbeddingSettings {
   allowedOrigins?: string[]
   requireOrigin?: boolean
@@ -51,11 +58,14 @@ interface Form {
   id: string
   title: string
   description?: string
-  fields: FormField[]
+  fields?: FormField[]
+  steps?: FormStep[]
+  isMultistep?: boolean
   settings: {
     allowMultipleSubmissions: boolean
     requireEmail: boolean
     showProgressBar: boolean
+    stepUI?: 'numbers' | 'letters' | 'percentage' | 'bar'
     submitButtonText: string
   }
   styling: {

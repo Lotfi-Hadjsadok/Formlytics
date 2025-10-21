@@ -122,11 +122,11 @@ export function FormBuilder({ formId, initialData }: FormBuilderProps) {
             title: form.title,
             description: form.description || '',
             fields: isMultistep ? [] : ((form.fields as any[]) || []),
-            settings: (form.settings as any) || {
-              allowMultipleSubmissions: false,
-              showProgressBar: false,
-              stepUI: 'numbers' as const,
-              submitButtonText: 'Submit'
+            settings: {
+              allowMultipleSubmissions: (form.settings as any)?.allowMultipleSubmissions || false,
+              showProgressBar: (form.settings as any)?.showProgressBar || false,
+              stepUI: (form.settings as any)?.stepUI || 'numbers',
+              submitButtonText: (form.settings as any)?.submitButtonText || 'Submit'
             },
             steps: isMultistep ? ((form.steps as any[]) || []) : [],
             isMultistep: isMultistep,
