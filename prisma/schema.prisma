@@ -77,6 +77,7 @@ model Organization {
   users            User[]
   subscriptions    Subscriptions[]
   transactions     Transactions[]
+  forms            Form[]
 
   @@map("organizations")
 }
@@ -106,4 +107,34 @@ model Transactions {
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@map("transactions")
+}
+
+model Form {
+  id             String      @id @default(cuid())
+  title          String
+  description    String?
+  fields         Json        // Store form field configuration as JSON
+  settings       Json?       // Store form settings as JSON
+  styling        Json?       // Store form styling as JSON
+  embedding      Json?       // Store embedding settings as JSON (allowedOrigins, tabSpecific, etc.)
+  thankYouPage   Json?       // Store thank you page settings as JSON (icon, title, text)
+  isActive       Boolean     @default(true)
+  organizationId String
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  entries        FormEntry[]
+
+  @@map("forms")
+}
+
+model FormEntry {
+  id        String   @id @default(cuid())
+  formId    String
+  answers   Json     // Store form responses as JSON
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  form      Form     @relation(fields: [formId], references: [id], onDelete: Cascade)
+
+  @@map("form_entries")
 }
