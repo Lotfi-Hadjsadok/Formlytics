@@ -55,6 +55,7 @@ interface FormData {
   settings: {
     allowMultipleSubmissions: boolean
     showProgressBar: boolean
+    stepUI: 'numbers' | 'letters' | 'percentage' | 'bar'
     submitButtonText: string
   }
   styling: {
@@ -90,6 +91,7 @@ export function FormBuilder({ formId, initialData }: FormBuilderProps) {
     settings: {
       allowMultipleSubmissions: false,
       showProgressBar: false,
+      stepUI: 'numbers' as const,
       submitButtonText: 'Submit'
     },
     styling: {
@@ -123,6 +125,7 @@ export function FormBuilder({ formId, initialData }: FormBuilderProps) {
             settings: (form.settings as any) || {
               allowMultipleSubmissions: false,
               showProgressBar: false,
+              stepUI: 'numbers' as const,
               submitButtonText: 'Submit'
             },
             steps: isMultistep ? ((form.steps as any[]) || []) : [],
@@ -507,9 +510,52 @@ export function FormBuilder({ formId, initialData }: FormBuilderProps) {
                 </p>
               </div>
             </div>
+
+            {/* Step UI Configuration - Only show for multistep forms */}
+            {formData.isMultistep && (
+              <div className="space-y-3">
+                <Label className="text-sm font-semibold text-gray-700">Step Progress Style</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { value: 'numbers', label: 'Numbers', description: '1, 2, 3...' },
+                    { value: 'letters', label: 'Letters', description: 'A, B, C...' },
+                    { value: 'percentage', label: 'Percentage', description: 'Step 1 of 3 (33%)' },
+                    { value: 'bar', label: 'Simple Bar', description: 'Progress bar only' }
+                  ].map((option) => (
+                    <div
+                      key={option.value}
+                      className={`p-3 border rounded-lg cursor-pointer transition-all ${
+                        formData.settings.stepUI === option.value
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                      onClick={() => setFormData(prev => ({
+                        ...prev,
+                        settings: { ...prev.settings, stepUI: option.value as any }
+                      }))}
+                    >
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="radio"
+                          name="stepUI"
+                          value={option.value}
+                          checked={formData.settings.stepUI === option.value}
+                          onChange={() => {}}
+                          className="w-4 h-4 text-blue-600"
+                        />
+                        <div>
+                          <div className="text-sm font-medium text-gray-700">{option.label}</div>
+                          <div className="text-xs text-gray-500">{option.description}</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </CardContent>
-        </Card>
+      </Card>
       )}
 
       {/* Actions */}

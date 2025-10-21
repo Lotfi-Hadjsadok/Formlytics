@@ -16,6 +16,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { toast } from "sonner"
+import { StepProgressIndicator } from "./StepProgressIndicator"
 
 interface FormField {
   id: string
@@ -52,6 +53,7 @@ interface Form {
     allowMultipleSubmissions: boolean
     requireEmail: boolean
     showProgressBar: boolean
+    stepUI?: 'numbers' | 'letters' | 'percentage' | 'bar'
     submitButtonText: string
   }
   styling: {
@@ -303,23 +305,14 @@ export function FormRenderer({
           </div>
         )}
 
-        {/* Progress Bar for Multistep Forms */}
+        {/* Step Progress Indicator for Multistep Forms */}
         {form.isMultistep && form.steps && form.settings?.showProgressBar && (
-          <div className="mb-6">
-            <div className="flex justify-between text-sm text-gray-600 mb-2">
-              <span>Step {currentStep + 1} of {form.steps.length}</span>
-              <span>{Math.round(((currentStep + 1) / form.steps.length) * 100)}% Complete</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
-                className="h-2 rounded-full transition-all duration-300"
-                style={{ 
-                  backgroundColor: form.styling?.primaryColor || '#3b82f6',
-                  width: `${((currentStep + 1) / form.steps.length) * 100}%`
-                }}
-              ></div>
-            </div>
-          </div>
+          <StepProgressIndicator
+            currentStep={currentStep}
+            totalSteps={form.steps.length}
+            stepUI={form.settings?.stepUI || 'numbers'}
+            primaryColor={form.styling?.primaryColor || '#3b82f6'}
+          />
         )}
 
         {/* Step Header for Multistep Forms */}
