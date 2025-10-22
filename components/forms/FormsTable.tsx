@@ -20,7 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { MoreHorizontal, Eye, Edit, Trash2, BarChart3, ExternalLink } from "lucide-react"
+import { MoreHorizontal, Eye, Edit, Trash2, BarChart3, ExternalLink, Share2, Copy, CheckCircle } from "lucide-react"
 import Link from "next/link"
 import { format } from "date-fns"
 import { useRouter } from "next/navigation"
@@ -48,6 +48,7 @@ export function FormsTable({ forms }: FormsTableProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [formToDelete, setFormToDelete] = useState<Form | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [copiedFormId, setCopiedFormId] = useState<string | null>(null)
   const router = useRouter()
 
   const handleDeleteClick = (form: Form) => {
@@ -69,6 +70,18 @@ export function FormsTable({ forms }: FormsTableProps) {
       toast.error(error instanceof Error ? error.message : "An error occurred while deleting the form.")
     } finally {
       setIsDeleting(false)
+    }
+  }
+
+  const copyFormLink = async (formId: string) => {
+    try {
+      const publicUrl = `${window.location.origin}/forms/${formId}`
+      await navigator.clipboard.writeText(publicUrl)
+      setCopiedFormId(formId)
+      toast.success('Form link copied to clipboard!')
+      setTimeout(() => setCopiedFormId(null), 2000)
+    } catch (error) {
+      toast.error('Failed to copy link to clipboard')
     }
   }
 
@@ -106,7 +119,20 @@ export function FormsTable({ forms }: FormsTableProps) {
                     </CardDescription>
                   )}
                 </div>
-                <DropdownMenu>
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => copyFormLink(form.id)}
+                    className="h-8 w-8 p-0"
+                  >
+                    {copiedFormId === form.id ? (
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <Share2 className="h-4 w-4" />
+                    )}
+                  </Button>
+                  <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="sm">
                       <MoreHorizontal className="h-4 w-4" />
@@ -152,6 +178,7 @@ export function FormsTable({ forms }: FormsTableProps) {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
+                </div>
               </div>
             </CardHeader>
             <CardContent className="pt-0">

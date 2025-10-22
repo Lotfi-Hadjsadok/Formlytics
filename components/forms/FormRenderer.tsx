@@ -18,68 +18,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { toast } from "sonner"
 import { StepProgressIndicator } from "./StepProgressIndicator"
-
-interface FormField {
-  id: string
-  type: 'text' | 'email' | 'textarea' | 'select' | 'multiselect' | 'multi-dropdown' | 'checkbox' | 'radio' | 'number' | 'date'
-  label: string
-  placeholder?: string
-  required: boolean
-  options?: string[]
-  width: 'full' | 'half' | 'third' | 'two-thirds'
-  styling?: {
-    backgroundColor?: string
-    textColor?: string
-    borderColor?: string
-    fontSize?: string
-    padding?: string
-  }
-}
-
-interface FormStep {
-  id: string
-  title: string
-  description?: string
-  fields: FormField[]
-}
-
-interface Form {
-  id: string
-  title: string
-  description?: string
-  fields?: FormField[]
-  steps?: FormStep[]
-  isMultistep?: boolean
-  settings: {
-    allowMultipleSubmissions: boolean
-    showProgressBar: boolean
-    stepUI?: 'numbers' | 'letters' | 'percentage' | 'bar'
-    submitButtonText: string
-  }
-  styling: {
-    backgroundColor: string
-    textColor: string
-    primaryColor: string
-    fontFamily: string
-    borderRadius: string
-  }
-  thankYouPage?: {
-    icon?: string
-    title?: string
-    text?: string
-  }
-  _count: {
-    entries: number
-  }
-}
-
-interface FormRendererProps {
-  form: Form
-  onSubmit: (formData: Record<string, any>) => Promise<void>
-  submitting?: boolean
-  showHeader?: boolean
-  className?: string
-}
+import { FormField, FormStep, Form, FormRendererProps } from "@/lib/types"
 
 export function FormRenderer({ 
   form, 

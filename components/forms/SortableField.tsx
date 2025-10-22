@@ -14,53 +14,7 @@ import {
 import { Plus, Trash2, GripVertical, Layout } from "lucide-react"
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-
-interface FormField {
-  id: string
-  type: 'text' | 'email' | 'textarea' | 'select' | 'multiselect' | 'multi-dropdown' | 'checkbox' | 'radio' | 'number' | 'date'
-  label: string
-  placeholder?: string
-  required: boolean
-  options?: string[]
-  width: 'full' | 'half' | 'third' | 'two-thirds'
-  styling?: {
-    backgroundColor?: string
-    textColor?: string
-    borderColor?: string
-    fontSize?: string
-    padding?: string
-  }
-}
-
-const fieldTypes = [
-  { value: 'text', label: 'Text Input', icon: '📝' },
-  { value: 'email', label: 'Email', icon: '📧' },
-  { value: 'textarea', label: 'Text Area', icon: '📄' },
-  { value: 'select', label: 'Dropdown', icon: '📋' },
-  { value: 'multiselect', label: 'Multiselect', icon: '☑️' },
-  { value: 'multi-dropdown', label: 'Multi Dropdown', icon: '📋' },
-  { value: 'checkbox', label: 'Checkbox', icon: '☑️' },
-  { value: 'radio', label: 'Radio Button', icon: '🔘' },
-  { value: 'number', label: 'Number', icon: '🔢' },
-  { value: 'date', label: 'Date', icon: '📅' },
-]
-
-const widthOptions = [
-  { value: 'full', label: 'Full Width', icon: '📏' },
-  { value: 'half', label: 'Half Width', icon: '📐' },
-  { value: 'third', label: 'One Third', icon: '📊' },
-  { value: 'two-thirds', label: 'Two Thirds', icon: '📈' },
-]
-
-interface SortableFieldProps {
-  field: FormField
-  index: number
-  updateField: (fieldId: string, updates: Partial<FormField>) => void
-  removeField: (fieldId: string) => void
-  addOption: (fieldId: string) => void
-  updateOption: (fieldId: string, optionIndex: number, value: string) => void
-  removeOption: (fieldId: string, optionIndex: number) => void
-}
+import { FormField, SortableFieldProps, fieldTypes, widthOptions } from "@/lib/types"
 
 export function SortableField({ 
   field, 

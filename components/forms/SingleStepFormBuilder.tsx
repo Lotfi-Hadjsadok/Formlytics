@@ -13,41 +13,7 @@ import { useSensor, useSensors, PointerSensor, KeyboardSensor, DragEndEvent, Dnd
 import { SortableContext, verticalListSortingStrategy, sortableKeyboardCoordinates } from '@dnd-kit/sortable'
 import { arrayMove } from '@dnd-kit/sortable'
 import { SortableField } from "./SortableField"
-
-interface FormField {
-  id: string
-  type: 'text' | 'email' | 'textarea' | 'select' | 'multiselect' | 'multi-dropdown' | 'checkbox' | 'radio' | 'number' | 'date'
-  label: string
-  placeholder?: string
-  required: boolean
-  options?: string[]
-  width: 'full' | 'half' | 'third' | 'two-thirds'
-  styling?: {
-    backgroundColor?: string
-    textColor?: string
-    borderColor?: string
-    fontSize?: string
-    padding?: string
-  }
-}
-
-const fieldTypes = [
-  { value: 'text', label: 'Text Input', icon: '📝' },
-  { value: 'email', label: 'Email', icon: '📧' },
-  { value: 'textarea', label: 'Text Area', icon: '📄' },
-  { value: 'select', label: 'Dropdown', icon: '📋' },
-  { value: 'multiselect', label: 'Multiselect', icon: '☑️' },
-  { value: 'multi-dropdown', label: 'Multi Dropdown', icon: '📋' },
-  { value: 'checkbox', label: 'Checkbox', icon: '☑️' },
-  { value: 'radio', label: 'Radio Button', icon: '🔘' },
-  { value: 'number', label: 'Number', icon: '🔢' },
-  { value: 'date', label: 'Date', icon: '📅' },
-]
-
-interface SingleStepFormBuilderProps {
-  fields: FormField[]
-  onFieldsChange: (fields: FormField[]) => void
-}
+import { FormField, SingleStepFormBuilderProps, fieldTypes } from "@/lib/types"
 
 export function SingleStepFormBuilder({ fields, onFieldsChange }: SingleStepFormBuilderProps) {
   const sensors = useSensors(

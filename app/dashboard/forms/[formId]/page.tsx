@@ -8,6 +8,7 @@ import { ArrowLeft, Edit, BarChart3, ExternalLink, Eye, Code } from "lucide-reac
 import Link from "next/link"
 import { Breadcrumbs } from "@/components/ui/breadcrumbs"
 import { format } from "date-fns"
+import { ShareButton } from "@/components/forms/ShareButton"
 
 interface FormDetailPageProps {
   params: Promise<{
@@ -70,6 +71,7 @@ export default async function FormDetailPage({ params }: FormDetailPageProps) {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          <ShareButton formId={form.id} />
           <Badge variant={form.isActive ? "default" : "secondary"}>
             {form.isActive ? "Active" : "Inactive"}
           </Badge>
@@ -226,6 +228,7 @@ export default async function FormDetailPage({ params }: FormDetailPageProps) {
                   View Analytics
                 </Link>
               </Button>
+              <ShareButton formId={form.id} className="w-full justify-start" />
               <Button asChild variant="outline" className="w-full justify-start">
                 <Link href={`/forms/${form.id}`} target="_blank">
                   <ExternalLink className="h-4 w-4 mr-2" />

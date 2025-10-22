@@ -10,19 +10,7 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu"
 import { Palette, Type } from "lucide-react"
-
-interface FormStyling {
-  backgroundColor: string
-  textColor: string
-  primaryColor: string
-  fontFamily: string
-  borderRadius: string
-}
-
-interface FormStylingSettingsProps {
-  styling: FormStyling
-  onStylingChange: (styling: FormStyling) => void
-}
+import { FormStyling, FormStylingSettingsProps } from "@/lib/types"
 
 const fontFamilies = [
   { value: 'var(--font-inter)', label: 'Inter' },

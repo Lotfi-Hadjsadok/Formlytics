@@ -287,6 +287,13 @@ export function PaginatedFormEntriesTable({
           )
         }
         return answer
+      case 'select':
+      case 'radio':
+        return (
+          <Badge variant="secondary" className="text-xs">
+            {answer}
+          </Badge>
+        )
       case 'date':
         return format(new Date(answer), 'MMM dd, yyyy')
       case 'textarea':

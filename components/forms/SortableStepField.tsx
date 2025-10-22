@@ -14,54 +14,8 @@ import {
 import { Plus, Trash2, GripVertical, Layout } from "lucide-react"
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import { FormField, SortableStepFieldProps, fieldTypes, widthOptions } from "@/lib/types"
 
-interface FormField {
-  id: string
-  type: 'text' | 'email' | 'textarea' | 'select' | 'multiselect' | 'multi-dropdown' | 'checkbox' | 'radio' | 'number' | 'date'
-  label: string
-  placeholder?: string
-  required: boolean
-  options?: string[]
-  width: 'full' | 'half' | 'third' | 'two-thirds'
-  styling?: {
-    backgroundColor?: string
-    textColor?: string
-    borderColor?: string
-    fontSize?: string
-    padding?: string
-  }
-}
-
-const fieldTypes = [
-  { value: 'text', label: 'Text Input', icon: '📝' },
-  { value: 'email', label: 'Email', icon: '📧' },
-  { value: 'textarea', label: 'Text Area', icon: '📄' },
-  { value: 'select', label: 'Dropdown', icon: '📋' },
-  { value: 'multiselect', label: 'Multiselect', icon: '☑️' },
-  { value: 'multi-dropdown', label: 'Multi Dropdown', icon: '📋' },
-  { value: 'checkbox', label: 'Checkbox', icon: '☑️' },
-  { value: 'radio', label: 'Radio Button', icon: '🔘' },
-  { value: 'number', label: 'Number', icon: '🔢' },
-  { value: 'date', label: 'Date', icon: '📅' },
-]
-
-const widthOptions = [
-  { value: 'full', label: 'Full Width', icon: '📏' },
-  { value: 'half', label: 'Half Width', icon: '📐' },
-  { value: 'third', label: 'One Third', icon: '📊' },
-  { value: 'two-thirds', label: 'Two Thirds', icon: '📈' },
-]
-
-interface SortableStepFieldProps {
-  field: FormField
-  stepId: string
-  index: number
-  updateField: (stepId: string, fieldId: string, updates: Partial<FormField>) => void
-  removeField: (stepId: string, fieldId: string) => void
-  addOption: (stepId: string, fieldId: string) => void
-  updateOption: (stepId: string, fieldId: string, optionIndex: number, value: string) => void
-  removeOption: (stepId: string, fieldId: string, optionIndex: number) => void
-}
 
 export function SortableStepField({ 
   field, 
@@ -88,11 +42,9 @@ export function SortableStepField({
     opacity: isDragging ? 0.5 : 1,
   }
 
-  const flexClass = field.width === 'full' ? 'w-full' : field.width === 'half' ? 'w-full md:w-1/2' : field.width === 'two-thirds' ? 'w-full md:w-2/3' : 'w-full md:w-1/3'
-
   return (
     <div ref={setNodeRef} style={style} className="w-full">
-      <div className={`border border-gray-200 rounded-lg bg-gray-50 shadow-sm hover:shadow-lg transition-all duration-200 border-l-4 border-l-blue-500 hover:border-l-blue-600 group w-full h-full min-w-0 max-w-none flex-shrink-0 ${flexClass}`}>
+      <div className="border border-gray-200 rounded-lg bg-gray-50 shadow-sm hover:shadow-lg transition-all duration-200 border-l-4 border-l-blue-500 hover:border-l-blue-600 group w-full h-full min-w-0 max-w-none flex-shrink-0">
         <div className="pt-6 pb-6 w-full px-6">
           <div className="flex items-start justify-between mb-6">
             <div className="flex items-center space-x-3">

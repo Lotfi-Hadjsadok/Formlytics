@@ -22,64 +22,7 @@ import { FormPreview } from "./FormPreview"
 import { FormStylingSettings } from "./FormStylingSettings"
 import { Collapsible } from "@/components/ui/collapsible"
 import { Switch } from "@/components/ui/switch"
-
-interface FormField {
-  id: string
-  type: 'text' | 'email' | 'textarea' | 'select' | 'multiselect' | 'multi-dropdown' | 'checkbox' | 'radio' | 'number' | 'date'
-  label: string
-  placeholder?: string
-  required: boolean
-  options?: string[] // For select, multiselect, multi-dropdown, radio, checkbox
-  width: 'full' | 'half' | 'third' | 'two-thirds'
-  styling?: {
-    backgroundColor?: string
-    textColor?: string
-    borderColor?: string
-    fontSize?: string
-    padding?: string
-  }
-}
-
-interface FormStep {
-  id: string
-  title: string
-  description?: string
-  fields: FormField[]
-}
-
-interface FormData {
-  title: string
-  description: string
-  fields: FormField[]
-  steps: FormStep[]
-  isMultistep: boolean
-  formTypeSelected: boolean
-  settings: {
-    allowMultipleSubmissions: boolean
-    showProgressBar: boolean
-    stepUI: 'numbers' | 'letters' | 'percentage' | 'bar'
-    submitButtonText: string
-  }
-  styling: {
-    backgroundColor: string
-    textColor: string
-    primaryColor: string
-    fontFamily: string
-    borderRadius: string
-  }
-  thankYouPage: {
-    icon?: string
-    title?: string
-    text?: string
-  }
-}
-
-
-
-interface FormBuilderProps {
-  formId?: string
-  initialData?: FormData
-}
+import { FormField, FormStep, FormData, FormBuilderProps, FormPreset, formPresets } from "@/lib/types"
 
 export function FormBuilder({ formId, initialData }: FormBuilderProps) {
   const router = useRouter()
@@ -111,6 +54,7 @@ export function FormBuilder({ formId, initialData }: FormBuilderProps) {
   })
   const [isSaving, setIsSaving] = useState(false)
   const [isLoading, setIsLoading] = useState(!!formId)
+  const [showPresets, setShowPresets] = useState(!formId && !initialData)
 
   // Load form data when editing
   useEffect(() => {
@@ -157,6 +101,21 @@ export function FormBuilder({ formId, initialData }: FormBuilderProps) {
       setIsLoading(false)
     }
   }, [formId, initialData])
+
+  const applyPreset = (preset: FormPreset) => {
+    setFormData({
+      title: preset.title,
+      description: preset.formDescription,
+      fields: preset.fields || [],
+      steps: preset.steps || [],
+      isMultistep: preset.isMultistep,
+      formTypeSelected: true,
+      settings: preset.settings,
+      styling: preset.styling,
+      thankYouPage: preset.thankYouPage
+    })
+    setShowPresets(false)
+  }
 
   const handleSave = async () => {
     if (!formData.title.trim()) {
@@ -262,8 +221,119 @@ export function FormBuilder({ formId, initialData }: FormBuilderProps) {
         </div>
       </Collapsible>
 
+      {/* Form Presets */}
+      {showPresets && (
+        <Collapsible
+          title="Choose a Template"
+          description="Start with a pre-built form template or create from scratch"
+          icon={<Layout className="h-5 w-5 text-purple-600" />}
+          defaultOpen={true}
+        >
+          <div className="space-y-6">
+            {/* Single-step presets */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                <span className="mr-2">📄</span>
+                Single-Step Forms
+                <span className="ml-2 text-sm font-normal text-gray-500">({formPresets.filter(p => p.category === 'single-step').length} templates)</span>
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {formPresets.filter(preset => preset.category === 'single-step').map((preset) => (
+                  <div
+                    key={preset.id}
+                    className="group relative bg-white border-2 border-gray-200 rounded-xl p-6 cursor-pointer hover:border-blue-300 hover:shadow-lg transition-all duration-200 hover:-translate-y-1"
+                    onClick={() => applyPreset(preset)}
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="text-3xl">{preset.icon}</div>
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                          <Layout className="h-4 w-4 text-blue-600" />
+                        </div>
+                      </div>
+                    </div>
+                    <h4 className="text-lg font-semibold text-gray-800 mb-2">{preset.name}</h4>
+                    <p className="text-sm text-gray-600 mb-4 line-clamp-2">{preset.description}</p>
+                    <div className="space-y-2">
+                      <div className="flex items-center text-xs text-gray-500">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                        <span>{preset.fields?.length || 0} fields</span>
+                      </div>
+                      <div className="flex items-center text-xs text-gray-500">
+                        <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                        <span>Ready to customize</span>
+                      </div>
+                    </div>
+                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Multi-step presets */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                <span className="mr-2">📋</span>
+                Multi-Step Forms
+                <span className="ml-2 text-sm font-normal text-gray-500">({formPresets.filter(p => p.category === 'multi-step').length} templates)</span>
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {formPresets.filter(preset => preset.category === 'multi-step').map((preset) => (
+                  <div
+                    key={preset.id}
+                    className="group relative bg-white border-2 border-gray-200 rounded-xl p-6 cursor-pointer hover:border-indigo-300 hover:shadow-lg transition-all duration-200 hover:-translate-y-1"
+                    onClick={() => applyPreset(preset)}
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="text-3xl">{preset.icon}</div>
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center">
+                          <Layout className="h-4 w-4 text-indigo-600" />
+                        </div>
+                      </div>
+                    </div>
+                    <h4 className="text-lg font-semibold text-gray-800 mb-2">{preset.name}</h4>
+                    <p className="text-sm text-gray-600 mb-4 line-clamp-2">{preset.description}</p>
+                    <div className="space-y-2">
+                      <div className="flex items-center text-xs text-gray-500">
+                        <div className="w-2 h-2 bg-indigo-500 rounded-full mr-2"></div>
+                        <span>{preset.steps?.length || 0} steps</span>
+                      </div>
+                      <div className="flex items-center text-xs text-gray-500">
+                        <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                        <span>Progress tracking</span>
+                      </div>
+                    </div>
+                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-indigo-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Start from scratch option */}
+            <div className="border-t border-gray-200 pt-6">
+              <div className="text-center">
+                <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+                  <Layout className="h-8 w-8 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">Start from Scratch</h3>
+                <p className="text-gray-600 mb-4">Create a custom form with your own fields and design</p>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowPresets(false)}
+                  className="border-dashed border-2 border-gray-300 hover:border-blue-500 hover:text-blue-600"
+                >
+                  <Layout className="h-4 w-4 mr-2" />
+                  Create Custom Form
+                </Button>
+              </div>
+            </div>
+          </div>
+        </Collapsible>
+      )}
+
       {/* Form Type Selection */}
-      {!formData.formTypeSelected && (
+      {!formData.formTypeSelected && !showPresets && (
         <Collapsible
           title="Choose Form Type"
           description="Select how you want to structure your form"
@@ -354,6 +424,24 @@ export function FormBuilder({ formId, initialData }: FormBuilderProps) {
           icon={<Layout className="h-5 w-5 text-green-600" />}
           defaultOpen={true}
         >
+          {/* Back to Templates Button */}
+          <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-sm font-semibold text-gray-700">Using a Template?</h4>
+                <p className="text-xs text-gray-500 mt-1">You can switch to a different template or start over</p>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setShowPresets(true)}
+                className="text-gray-600 hover:text-blue-600"
+              >
+                <Layout className="h-4 w-4 mr-2" />
+                Browse Templates
+              </Button>
+            </div>
+          </div>
           {formData.isMultistep ? (
             <MultiStepFormBuilder 
               steps={formData.steps}
@@ -497,66 +585,71 @@ export function FormBuilder({ formId, initialData }: FormBuilderProps) {
                 </div>
               </div>
 
-              <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg">
-                <Switch
-                  id="showProgressBar"
-                  checked={formData.settings.showProgressBar !== false}
-                  onCheckedChange={(checked) => setFormData(prev => ({
-                    ...prev,
-                    settings: { ...prev.settings, showProgressBar: checked }
-                  }))}
-                />
-                <div>
-                  <Label htmlFor="showProgressBar" className="text-sm font-medium text-gray-700">
-                    Show progress bar
-                  </Label>
-                  <p className="text-xs text-gray-500">
-                    Display completion progress to users and configure step progress style
-                  </p>
-                </div>
-              </div>
-
-              {/* Step UI Configuration - Show when progress bar is enabled */}
-              {formData.settings.showProgressBar && (
-                <div className="space-y-3">
-                  <Label className="text-sm font-semibold text-gray-700">Step Progress Style</Label>
-                  <div className="grid grid-cols-2 gap-3">
-                    {[
-                      { value: 'numbers', label: 'Numbers', description: '1, 2, 3...' },
-                      { value: 'letters', label: 'Letters', description: 'A, B, C...' },
-                      { value: 'percentage', label: 'Percentage', description: 'Step 1 of 3 (33%)' },
-                      { value: 'bar', label: 'Simple Bar', description: 'Progress bar only' }
-                    ].map((option) => (
-                      <div
-                        key={option.value}
-                        className={`p-3 border rounded-lg cursor-pointer transition-all ${
-                          formData.settings.stepUI === option.value
-                            ? 'border-blue-500 bg-blue-50'
-                            : 'border-gray-200 hover:border-gray-300'
-                        }`}
-                        onClick={() => setFormData(prev => ({
-                          ...prev,
-                          settings: { ...prev.settings, stepUI: option.value as any }
-                        }))}
-                      >
-                        <div className="flex items-center space-x-2">
-                          <input
-                            type="radio"
-                            name="stepUI"
-                            value={option.value}
-                            checked={formData.settings.stepUI === option.value}
-                            onChange={() => {}}
-                            className="w-4 h-4 text-blue-600"
-                          />
-                          <div>
-                            <div className="text-sm font-medium text-gray-700">{option.label}</div>
-                            <div className="text-xs text-gray-500">{option.description}</div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+              {/* Progress bar settings - only show for multi-step forms */}
+              {formData.isMultistep && (
+                <>
+                  <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg">
+                    <Switch
+                      id="showProgressBar"
+                      checked={formData.settings.showProgressBar !== false}
+                      onCheckedChange={(checked) => setFormData(prev => ({
+                        ...prev,
+                        settings: { ...prev.settings, showProgressBar: checked }
+                      }))}
+                    />
+                    <div>
+                      <Label htmlFor="showProgressBar" className="text-sm font-medium text-gray-700">
+                        Show progress bar
+                      </Label>
+                      <p className="text-xs text-gray-500">
+                        Display completion progress to users and configure step progress style
+                      </p>
+                    </div>
                   </div>
-                </div>
+
+                  {/* Step UI Configuration - Show when progress bar is enabled */}
+                  {formData.settings.showProgressBar && (
+                    <div className="space-y-3">
+                      <Label className="text-sm font-semibold text-gray-700">Step Progress Style</Label>
+                      <div className="grid grid-cols-2 gap-3">
+                        {[
+                          { value: 'numbers', label: 'Numbers', description: '1, 2, 3...' },
+                          { value: 'letters', label: 'Letters', description: 'A, B, C...' },
+                          { value: 'percentage', label: 'Percentage', description: 'Step 1 of 3 (33%)' },
+                          { value: 'bar', label: 'Simple Bar', description: 'Progress bar only' }
+                        ].map((option) => (
+                          <div
+                            key={option.value}
+                            className={`p-3 border rounded-lg cursor-pointer transition-all ${
+                              formData.settings.stepUI === option.value
+                                ? 'border-blue-500 bg-blue-50'
+                                : 'border-gray-200 hover:border-gray-300'
+                            }`}
+                            onClick={() => setFormData(prev => ({
+                              ...prev,
+                              settings: { ...prev.settings, stepUI: option.value as any }
+                            }))}
+                          >
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="radio"
+                                name="stepUI"
+                                value={option.value}
+                                checked={formData.settings.stepUI === option.value}
+                                onChange={() => {}}
+                                className="w-4 h-4 text-blue-600"
+                              />
+                              <div>
+                                <div className="text-sm font-medium text-gray-700">{option.label}</div>
+                                <div className="text-xs text-gray-500">{option.description}</div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>

@@ -7,51 +7,7 @@ import { Button } from "@/components/ui/button"
 import { CheckCircle, AlertCircle, Shield, Loader2 } from "lucide-react"
 import { FormRenderer } from "@/components/forms/FormRenderer"
 import { toast } from "sonner"
-
-interface FormField {
-  id: string
-  type: 'text' | 'email' | 'textarea' | 'select' | 'checkbox' | 'radio' | 'number' | 'date'
-  label: string
-  placeholder?: string
-  required: boolean
-  options?: string[]
-  width: 'full' | 'half' | 'third' | 'two-thirds'
-  styling?: {
-    backgroundColor?: string
-    textColor?: string
-    borderColor?: string
-    fontSize?: string
-    padding?: string
-  }
-}
-
-interface EmbeddingSettings {
-  allowedOrigins?: string[]
-  requireOrigin?: boolean
-}
-
-interface FormStep {
-  id: string
-  title: string
-  description?: string
-  fields: FormField[]
-}
-
-interface Form {
-  id: string
-  title: string
-  description?: string | null
-  fields?: any
-  steps?: any
-  isMultistep?: boolean
-  settings: any
-  styling: any
-  thankYouPage?: any
-  embedding?: any
-  _count: {
-    entries: number
-  }
-}
+import { FormField, EmbeddingSettings, FormStep, Form } from "@/lib/types"
 
 export default function EmbedFormPage() {
   const params = useParams()

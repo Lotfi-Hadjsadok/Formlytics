@@ -19,48 +19,7 @@ import { SortableContext, verticalListSortingStrategy, sortableKeyboardCoordinat
 import { arrayMove } from '@dnd-kit/sortable'
 import { SortableStepField } from "./SortableStepField"
 import { Collapsible } from "@/components/ui/collapsible"
-
-interface FormField {
-  id: string
-  type: 'text' | 'email' | 'textarea' | 'select' | 'multiselect' | 'multi-dropdown' | 'checkbox' | 'radio' | 'number' | 'date'
-  label: string
-  placeholder?: string
-  required: boolean
-  options?: string[]
-  width: 'full' | 'half' | 'third' | 'two-thirds'
-  styling?: {
-    backgroundColor?: string
-    textColor?: string
-    borderColor?: string
-    fontSize?: string
-    padding?: string
-  }
-}
-
-interface FormStep {
-  id: string
-  title: string
-  description?: string
-  fields: FormField[]
-}
-
-const fieldTypes = [
-  { value: 'text', label: 'Text Input', icon: '📝' },
-  { value: 'email', label: 'Email', icon: '📧' },
-  { value: 'textarea', label: 'Text Area', icon: '📄' },
-  { value: 'select', label: 'Dropdown', icon: '📋' },
-  { value: 'multiselect', label: 'Multiselect', icon: '☑️' },
-  { value: 'multi-dropdown', label: 'Multi Dropdown', icon: '📋' },
-  { value: 'checkbox', label: 'Checkbox', icon: '☑️' },
-  { value: 'radio', label: 'Radio Button', icon: '🔘' },
-  { value: 'number', label: 'Number', icon: '🔢' },
-  { value: 'date', label: 'Date', icon: '📅' },
-]
-
-interface MultiStepFormBuilderProps {
-  steps: FormStep[]
-  onStepsChange: (steps: FormStep[]) => void
-}
+import { FormField, FormStep, MultiStepFormBuilderProps, fieldTypes } from "@/lib/types"
 
 export function MultiStepFormBuilder({ steps, onStepsChange }: MultiStepFormBuilderProps) {
   const sensors = useSensors(
@@ -376,18 +335,20 @@ export function MultiStepFormBuilder({ steps, onStepsChange }: MultiStepFormBuil
                                 <div key={rowIndex} className="flex flex-col md:flex-row gap-4">
                                   {row.map((field, fieldIndex) => {
                                     const globalFieldIndex = step.fields.findIndex(f => f.id === field.id)
+                                    const flexClass = field.width === 'full' ? 'w-full' : field.width === 'half' ? 'w-full md:w-1/2' : field.width === 'two-thirds' ? 'w-full md:w-2/3' : 'w-full md:w-1/3'
                                     return (
-                                      <SortableStepField
-                                        key={field.id}
-                                        field={field}
-                                        stepId={step.id}
-                                        index={globalFieldIndex}
-                                        updateField={updateFieldInStep}
-                                        removeField={removeFieldFromStep}
-                                        addOption={addOptionToStep}
-                                        updateOption={updateOptionInStep}
-                                        removeOption={removeOptionFromStep}
-                                      />
+                                      <div key={field.id} className={`${flexClass} transition-all duration-300 ease-in-out`} style={{ minWidth: 0 }}>
+                                        <SortableStepField
+                                          field={field}
+                                          stepId={step.id}
+                                          index={globalFieldIndex}
+                                          updateField={updateFieldInStep}
+                                          removeField={removeFieldFromStep}
+                                          addOption={addOptionToStep}
+                                          updateOption={updateOptionInStep}
+                                          removeOption={removeOptionFromStep}
+                                        />
+                                      </div>
                                     )
                                   })}
                                 </div>

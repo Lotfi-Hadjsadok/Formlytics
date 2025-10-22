@@ -24,18 +24,7 @@ import {
   Globe
 } from "lucide-react"
 import { toast } from "sonner"
-
-interface EmbeddingSettings {
-  allowedOrigins?: string[]
-  requireOrigin?: boolean
-}
-
-interface Form {
-  id: string
-  title: string
-  description?: string
-  embedding?: EmbeddingSettings
-}
+import { EmbeddingSettings, Form } from "@/lib/types"
 
 export default function EmbeddingSettingsPage() {
   const params = useParams()

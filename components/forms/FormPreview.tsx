@@ -16,59 +16,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Eye, Layout, Settings } from "lucide-react"
-
-interface FormField {
-  id: string
-  type: 'text' | 'email' | 'textarea' | 'select' | 'checkbox' | 'radio' | 'number' | 'date'
-  label: string
-  placeholder?: string
-  required: boolean
-  options?: string[]
-  width: 'full' | 'half' | 'third' | 'two-thirds'
-  styling?: {
-    backgroundColor?: string
-    textColor?: string
-    borderColor?: string
-    fontSize?: string
-    padding?: string
-  }
-}
-
-interface FormStep {
-  id: string
-  title: string
-  description?: string
-  fields: FormField[]
-}
-
-interface FormData {
-  title: string
-  description: string
-  fields: FormField[]
-  steps: FormStep[]
-  isMultistep: boolean
-  settings: {
-    allowMultipleSubmissions: boolean
-    showProgressBar: boolean
-    submitButtonText: string
-  }
-  styling: {
-    backgroundColor: string
-    textColor: string
-    primaryColor: string
-    fontFamily: string
-    borderRadius: string
-  }
-  thankYouPage: {
-    icon?: string
-    title?: string
-    text?: string
-  }
-}
-
-interface FormPreviewProps {
-  formData: FormData
-}
+import { FormField, FormStep, FormData, FormPreviewProps } from "@/lib/types"
 
 export function FormPreview({ formData }: FormPreviewProps) {
   const [activePreviewTab, setActivePreviewTab] = useState<'form' | 'thankYou'>('form')
@@ -290,6 +238,34 @@ export function FormPreview({ formData }: FormPreviewProps) {
                                     ))}
                                   </div>
                                 )}
+                                
+                                {field.type === 'multiselect' && (
+                                  <div className="space-y-2 opacity-50">
+                                    {field.options?.map((option, index) => (
+                                      <div key={index} className="flex items-center space-x-2">
+                                        <Checkbox id={`${field.id}-${index}`} />
+                                        <Label htmlFor={`${field.id}-${index}`} className="text-sm">
+                                          {option}
+                                        </Label>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                                
+                                {field.type === 'multi-dropdown' && (
+                                  <Select disabled>
+                                    <SelectTrigger className="opacity-50">
+                                      <SelectValue placeholder="Select options..." />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {field.options?.map((option, index) => (
+                                        <SelectItem key={index} value={option}>
+                                          {option}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                )}
                               </div>
                             ))}
                           </div>
@@ -421,6 +397,34 @@ export function FormPreview({ formData }: FormPreviewProps) {
                                   </div>
                                 ))}
                               </div>
+                            )}
+                            
+                            {field.type === 'multiselect' && (
+                              <div className="space-y-2 opacity-50">
+                                {field.options?.map((option, index) => (
+                                  <div key={index} className="flex items-center space-x-2">
+                                    <Checkbox id={`${field.id}-${index}`} />
+                                    <Label htmlFor={`${field.id}-${index}`} className="text-sm">
+                                      {option}
+                                    </Label>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            
+                            {field.type === 'multi-dropdown' && (
+                              <Select disabled>
+                                <SelectTrigger className="opacity-50">
+                                  <SelectValue placeholder="Select options..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {field.options?.map((option, index) => (
+                                    <SelectItem key={index} value={option}>
+                                      {option}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
                             )}
                           </div>
                         ))}
