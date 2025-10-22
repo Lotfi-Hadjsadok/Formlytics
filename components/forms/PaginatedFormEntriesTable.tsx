@@ -29,6 +29,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuCheckboxItem,
 } from "@/components/ui/dropdown-menu"
+import { useSidebar } from "@/components/ui/sidebar"
 import { useSensor, useSensors, PointerSensor, KeyboardSensor, DragEndEvent, DndContext, closestCenter } from '@dnd-kit/core'
 import { useSortable, arrayMove, SortableContext, verticalListSortingStrategy, sortableKeyboardCoordinates } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
@@ -236,6 +237,9 @@ export function PaginatedFormEntriesTable({
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
   const [loading, setLoading] = useState(false)
+  
+  // Get sidebar state for dynamic width
+  const { state: sidebarState } = useSidebar()
   
   // Use persistent column order hook
   const { columns, setColumns, resetColumnOrder } = useColumnOrder(formFields, formId)
@@ -487,13 +491,19 @@ export function PaginatedFormEntriesTable({
       </div>
 
       {/* Table */}
-      <div className="border rounded-lg overflow-hidden">
+      <div 
+        className="border rounded-lg transition-all duration-300"
+        style={{
+          width: sidebarState === "expanded" ? "calc(100vw - var(--sidebar-width, 280px) - 5.5rem)" : "calc(100vw - var(--sidebar-width-icon, 64px) - 3rem)",
+          maxWidth: "100%"
+        }}
+      >
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}
         >
-          <Table>
+          <Table className="overflow-x-auto">
             <TableHeader>
               <TableRow>
                 <SortableContext
@@ -534,9 +544,9 @@ export function PaginatedFormEntriesTable({
                 </SortableContext>
               </TableRow>
             </TableHeader>
-            <TableBody>
+            <TableBody >
               {loading ? (
-                <TableRow>
+                <TableRow >
                   <TableCell colSpan={visibleColumns.length} className="text-center py-8">
                     <div className="flex items-center justify-center">
                       <Loader2 className="h-6 w-6 animate-spin" />
@@ -546,7 +556,7 @@ export function PaginatedFormEntriesTable({
                 </TableRow>
               ) : (
                 entries.map((entry) => (
-                  <TableRow key={entry.id}>
+                  <TableRow  key={entry.id}>
                     {visibleColumns.map((column) => {
                       if (column.id === 'submitted') {
                         return (
@@ -582,6 +592,7 @@ export function PaginatedFormEntriesTable({
           </Table>
         </DndContext>
       </div>
+
 
       {/* Pagination */}
       {totalPages > 1 && (
