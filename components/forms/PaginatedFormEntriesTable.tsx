@@ -256,7 +256,37 @@ export function PaginatedFormEntriesTable({
     
     switch (field.type) {
       case 'checkbox':
+      case 'multiselect':
+      case 'multi-dropdown':
         return Array.isArray(answer) ? answer.join(', ') : answer
+      case 'date':
+        return format(new Date(answer), 'MMM dd, yyyy')
+      case 'textarea':
+        return answer.length > 50 ? `${answer.substring(0, 50)}...` : answer
+      default:
+        return String(answer)
+    }
+  }
+
+  const renderAnswer = (field: FormField, answer: any) => {
+    if (!answer) return "-"
+    
+    switch (field.type) {
+      case 'checkbox':
+      case 'multiselect':
+      case 'multi-dropdown':
+        if (Array.isArray(answer) && answer.length > 0) {
+          return (
+            <div className="flex flex-wrap gap-1">
+              {answer.map((item: string, index: number) => (
+                <Badge key={index} variant="secondary" className="text-xs">
+                  {item}
+                </Badge>
+              ))}
+            </div>
+          )
+        }
+        return answer
       case 'date':
         return format(new Date(answer), 'MMM dd, yyyy')
       case 'textarea':
@@ -533,7 +563,7 @@ export function PaginatedFormEntriesTable({
                         const field = (formFields || []).find(f => f.id === column.id)
                         return (
                           <TableCell key={column.id} className="text-sm">
-                            {field ? formatAnswer(field, entry.answers[field.id]) : "-"}
+                            {field ? renderAnswer(field, entry.answers[field.id]) : "-"}
                           </TableCell>
                         )
                       }
@@ -617,7 +647,7 @@ export function PaginatedFormEntriesTable({
                     {field.required && <span className="text-red-500 ml-1">*</span>}
                   </h4>
                   <p className="text-sm text-gray-900">
-                    {formatAnswer(field, selectedEntry.answers[field.id]) || (
+                    {renderAnswer(field, selectedEntry.answers[field.id]) || (
                       <span className="text-gray-400 italic">No answer provided</span>
                     )}
                   </p>

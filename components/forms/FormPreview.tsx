@@ -166,13 +166,6 @@ export function FormPreview({ formData }: FormPreviewProps) {
             }}
           >
             <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-semibold">{formData.title || 'Form Title'}</h3>
-                {formData.description && (
-                  <p className="text-sm opacity-75 mt-1">{formData.description}</p>
-                )}
-              </div>
-              
               {formData.isMultistep ? (
                 formData.steps.length > 0 ? (
                   <div className="space-y-6">
@@ -197,12 +190,6 @@ export function FormPreview({ formData }: FormPreviewProps) {
                     
                     {/* Step Preview */}
                     <div className="space-y-4">
-                      <div className="border-l-4 border-l-indigo-500 pl-4">
-                        <h4 className="font-semibold text-lg">{formData.steps[0]?.title || 'Step 1'}</h4>
-                        {formData.steps[0]?.description && (
-                          <p className="text-sm opacity-75 mt-1">{formData.steps[0].description}</p>
-                        )}
-                      </div>
                       
                       {(() => {
                         const stepFields = formData.steps[0]?.fields || []

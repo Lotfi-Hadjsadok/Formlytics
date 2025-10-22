@@ -22,60 +22,76 @@ export function StepProgressIndicator({
   const progress = ((currentStep + 1) / totalSteps) * 100
 
   const renderNumbers = () => (
-    <div className="flex items-center justify-between w-full">
+    <div className="relative flex items-center justify-between w-full">
+      {/* Background line that goes through all circles */}
+      <div 
+        className="absolute top-1/2 left-0 right-0 h-0.5 transform -translate-y-1/2 transition-all duration-300"
+        style={{
+          backgroundColor: '#e5e7eb'
+        }}
+      />
+      {/* Active line that fills up to current step */}
+      <div 
+        className="absolute top-1/2 left-0 h-0.5 transform -translate-y-1/2 transition-all duration-300"
+        style={{
+          backgroundColor: primaryColor,
+          width: totalSteps > 1 ? `${(currentStep / (totalSteps - 1)) * 100}%` : '0%'
+        }}
+      />
+      
+      {/* Circles positioned on top of the line */}
       {Array.from({ length: totalSteps }, (_, index) => (
-        <div key={index} className="flex items-center flex-1">
-          <div
-            className={cn(
-              "flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold transition-all duration-300",
-              index <= currentStep
-                ? "text-white"
-                : "text-gray-500 bg-gray-200"
-            )}
-            style={{
-              backgroundColor: index <= currentStep ? primaryColor : undefined
-            }}
-          >
-            {index + 1}
-          </div>
-          {index < totalSteps - 1 && (
-            <div 
-              className="flex-1 h-0.5 mx-2 transition-all duration-300"
-              style={{
-                backgroundColor: index < currentStep ? primaryColor : '#e5e7eb'
-              }}
-            />
+        <div
+          key={index}
+          className={cn(
+            "relative z-10 flex items-center justify-center w-10 h-10 rounded-full text-sm font-semibold transition-all duration-300 shadow-sm",
+            index <= currentStep
+              ? "text-white shadow-md"
+              : "text-gray-500 bg-gray-200"
           )}
+          style={{
+            backgroundColor: index <= currentStep ? primaryColor : undefined
+          }}
+        >
+          {index + 1}
         </div>
       ))}
     </div>
   )
 
   const renderLetters = () => (
-    <div className="flex items-center justify-between w-full">
+    <div className="relative flex items-center justify-between w-full">
+      {/* Background line that goes through all circles */}
+      <div 
+        className="absolute top-1/2 left-0 right-0 h-0.5 transform -translate-y-1/2 transition-all duration-300"
+        style={{
+          backgroundColor: '#e5e7eb'
+        }}
+      />
+      {/* Active line that fills up to current step */}
+      <div 
+        className="absolute top-1/2 left-0 h-0.5 transform -translate-y-1/2 transition-all duration-300"
+        style={{
+          backgroundColor: primaryColor,
+          width: totalSteps > 1 ? `${(currentStep / (totalSteps - 1)) * 100}%` : '0%'
+        }}
+      />
+      
+      {/* Circles positioned on top of the line */}
       {Array.from({ length: totalSteps }, (_, index) => (
-        <div key={index} className="flex items-center flex-1">
-          <div
-            className={cn(
-              "flex items-center justify-center w-8 h-8 rounded-full text-sm font-semibold transition-all duration-300",
-              index <= currentStep
-                ? "text-white"
-                : "text-gray-500 bg-gray-200"
-            )}
-            style={{
-              backgroundColor: index <= currentStep ? primaryColor : undefined
-            }}
-          >
-            {String.fromCharCode(65 + index)}
-          </div>
-          {index < totalSteps - 1 && (
-            <div 
-              className="flex-1 h-0.5 mx-2 transition-all duration-300"
-              style={{
-                backgroundColor: index < currentStep ? primaryColor : '#e5e7eb'
-              }}
-            />
+        <div
+          key={index}
+          className={cn(
+            "relative z-10 flex items-center justify-center w-10 h-10 rounded-full text-sm font-semibold transition-all duration-300 shadow-sm",
+            index <= currentStep
+              ? "text-white shadow-md"
+              : "text-gray-500 bg-gray-200"
           )}
+          style={{
+            backgroundColor: index <= currentStep ? primaryColor : undefined
+          }}
+        >
+          {String.fromCharCode(65 + index)}
         </div>
       ))}
     </div>

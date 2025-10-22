@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { toast } from "sonner"
@@ -20,7 +21,7 @@ import { StepProgressIndicator } from "./StepProgressIndicator"
 
 interface FormField {
   id: string
-  type: 'text' | 'email' | 'textarea' | 'select' | 'checkbox' | 'radio' | 'number' | 'date'
+  type: 'text' | 'email' | 'textarea' | 'select' | 'multiselect' | 'multi-dropdown' | 'checkbox' | 'radio' | 'number' | 'date'
   label: string
   placeholder?: string
   required: boolean
@@ -94,7 +95,7 @@ export function FormRenderer({
     if (form.isMultistep && form.steps) {
       form.steps.forEach((step: FormStep) => {
         step.fields.forEach((field: FormField) => {
-          if (field.type === 'checkbox') {
+          if (field.type === 'checkbox' || field.type === 'multiselect' || field.type === 'multi-dropdown') {
             initialData[field.id] = []
           } else {
             initialData[field.id] = ''
@@ -103,7 +104,7 @@ export function FormRenderer({
       })
     } else if (form.fields) {
       form.fields.forEach((field: FormField) => {
-        if (field.type === 'checkbox') {
+        if (field.type === 'checkbox' || field.type === 'multiselect' || field.type === 'multi-dropdown') {
           initialData[field.id] = []
         } else {
           initialData[field.id] = ''
@@ -124,6 +125,40 @@ export function FormRenderer({
   }
 
   const handleCheckboxChange = (fieldId: string, option: string, checked: boolean) => {
+    setFormData(prev => {
+      const currentValues = prev[fieldId] || []
+      if (checked) {
+        return {
+          ...prev,
+          [fieldId]: [...currentValues, option]
+        }
+      } else {
+        return {
+          ...prev,
+          [fieldId]: currentValues.filter((v: string) => v !== option)
+        }
+      }
+    })
+  }
+
+  const handleMultiselectChange = (fieldId: string, option: string, checked: boolean) => {
+    setFormData(prev => {
+      const currentValues = prev[fieldId] || []
+      if (checked) {
+        return {
+          ...prev,
+          [fieldId]: [...currentValues, option]
+        }
+      } else {
+        return {
+          ...prev,
+          [fieldId]: currentValues.filter((v: string) => v !== option)
+        }
+      }
+    })
+  }
+
+  const handleMultiDropdownChange = (fieldId: string, option: string, checked: boolean) => {
     setFormData(prev => {
       const currentValues = prev[fieldId] || []
       if (checked) {
@@ -294,15 +329,7 @@ export function FormRenderer({
         className="max-w-4xl mx-auto"
         style={getFormStyles()}
       >
-        {/* Form Header */}
-        {showHeader && (
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold mb-2">{form.title}</h1>
-            {form.description && (
-              <p className="text-gray-600">{form.description}</p>
-            )}
-          </div>
-        )}
+        {/* Form Header - Removed */}
 
         {/* Step Progress Indicator for Multistep Forms */}
         {form.isMultistep && form.steps && (form.settings?.showProgressBar !== false) && (
@@ -406,6 +433,93 @@ export function FormRenderer({
                       ))}
                     </SelectContent>
                   </Select>
+                )}
+                
+                {field.type === 'multiselect' && (
+                  <div className="space-y-2">
+                    {field.options?.map((option, index) => (
+                      <div key={index} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`${field.id}-${index}`}
+                          checked={(formData[field.id] || []).includes(option)}
+                          onCheckedChange={(checked) => handleMultiselectChange(field.id, option, checked as boolean)}
+                        />
+                        <Label htmlFor={`${field.id}-${index}`} className="text-sm">
+                          {option}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {field.type === 'multi-dropdown' && (
+                  <div className="space-y-2">
+                    <Select
+                      value=""
+                      onValueChange={(value) => {
+                        if (value && !(formData[field.id] || []).includes(value)) {
+                          handleMultiDropdownChange(field.id, value, true)
+                        }
+                      }}
+                    >
+                      <SelectTrigger 
+                        className="min-h-[40px] h-auto"
+                        onPointerDown={(e) => {
+                          // Prevent dropdown from opening when clicking on badges
+                          if ((e.target as HTMLElement).closest('[data-badge]')) {
+                            e.preventDefault()
+                          }
+                        }}
+                      >
+                        <div className="flex flex-wrap gap-1 w-full">
+                          {(formData[field.id] || []).length > 0 ? (
+                            (formData[field.id] || []).map((selectedOption: string, index: number) => (
+                              <Badge 
+                                key={index} 
+                                variant="secondary" 
+                                className="text-xs px-2 py-1 cursor-pointer hover:bg-red-100 hover:text-red-700 transition-colors"
+                                data-badge="true"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  e.preventDefault()
+                                  handleMultiDropdownChange(field.id, selectedOption, false)
+                                }}
+                              >
+                                {selectedOption}
+                                <span className="ml-1">
+                                  ×
+                                </span>
+                              </Badge>
+                            ))
+                          ) : (
+                            <span className="text-muted-foreground text-sm">Select options...</span>
+                          )}
+                        </div>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {field.options?.map((option, index) => {
+                          const isSelected = (formData[field.id] || []).includes(option)
+                          return (
+                            <div
+                              key={index}
+                              className={`cursor-pointer px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground ${isSelected ? "bg-muted text-muted-foreground" : ""}`}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleMultiDropdownChange(field.id, option, !isSelected)
+                              }}
+                            >
+                              <div className="flex items-center gap-2">
+                                {isSelected && (
+                                  <span className="text-black font-bold">✓</span>
+                                )}
+                                {option}
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 )}
                 
                 {field.type === 'radio' && (

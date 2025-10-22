@@ -17,7 +17,7 @@ import { CSS } from '@dnd-kit/utilities'
 
 interface FormField {
   id: string
-  type: 'text' | 'email' | 'textarea' | 'select' | 'checkbox' | 'radio' | 'number' | 'date'
+  type: 'text' | 'email' | 'textarea' | 'select' | 'multiselect' | 'multi-dropdown' | 'checkbox' | 'radio' | 'number' | 'date'
   label: string
   placeholder?: string
   required: boolean
@@ -37,6 +37,8 @@ const fieldTypes = [
   { value: 'email', label: 'Email', icon: '📧' },
   { value: 'textarea', label: 'Text Area', icon: '📄' },
   { value: 'select', label: 'Dropdown', icon: '📋' },
+  { value: 'multiselect', label: 'Multiselect', icon: '☑️' },
+  { value: 'multi-dropdown', label: 'Multi Dropdown', icon: '📋' },
   { value: 'checkbox', label: 'Checkbox', icon: '☑️' },
   { value: 'radio', label: 'Radio Button', icon: '🔘' },
   { value: 'number', label: 'Number', icon: '🔢' },
@@ -151,7 +153,7 @@ export function SortableStepField({
               </div>
             </div>
             
-            {field.type !== 'checkbox' && field.type !== 'radio' && (
+            {field.type !== 'checkbox' && field.type !== 'radio' && field.type !== 'multiselect' && field.type !== 'multi-dropdown' && (
               <div>
                 <Label className="text-xs font-semibold text-gray-600">Placeholder</Label>
                 <Input
@@ -163,7 +165,7 @@ export function SortableStepField({
               </div>
             )}
             
-            {(field.type === 'select' || field.type === 'radio' || field.type === 'checkbox') && (
+            {(field.type === 'select' || field.type === 'multiselect' || field.type === 'multi-dropdown' || field.type === 'radio' || field.type === 'checkbox') && (
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <Label className="text-xs font-semibold text-gray-600">Options</Label>

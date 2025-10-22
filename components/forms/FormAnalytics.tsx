@@ -167,7 +167,7 @@ export function FormAnalytics({ dailyResponses, fieldAnalytics }: FormAnalyticsP
       {/* Field-Specific Value Analytics */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {fieldAnalytics.filter(field => 
-          ['select', 'radio', 'checkbox', 'rating'].includes(field.fieldType) && 
+          ['select', 'radio', 'checkbox', 'multiselect', 'multi-dropdown', 'rating'].includes(field.fieldType) && 
           ((field.optionCounts && Object.keys(field.optionCounts).length > 0) || field.ratingCounts)
         ).map((field, index) => (
           <Card key={field.fieldId} className="border-0 shadow-lg bg-gradient-to-br from-white to-gray-50/30 hover:shadow-xl transition-shadow duration-300">
@@ -234,7 +234,7 @@ export function FormAnalytics({ dailyResponses, fieldAnalytics }: FormAnalyticsP
                 </div>
               )}
 
-              {(field.fieldType === 'select' || field.fieldType === 'radio' || field.fieldType === 'checkbox') && field.optionCounts && (
+              {(field.fieldType === 'select' || field.fieldType === 'radio' || field.fieldType === 'checkbox' || field.fieldType === 'multiselect' || field.fieldType === 'multi-dropdown') && field.optionCounts && (
                 <div className="space-y-4">
                   <div className="text-center p-3 bg-green-50 rounded-lg">
                     <div className="text-lg font-semibold text-green-600">

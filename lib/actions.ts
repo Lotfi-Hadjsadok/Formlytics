@@ -403,15 +403,42 @@ export async function getFormEntries(formId: string, options: {
     const totalPages = Math.ceil(totalCount / limit)
     const skip = (page - 1) * limit
 
+    // Define valid database fields for sorting
+    const validDbFields = ['id', 'formId', 'createdAt', 'updatedAt']
+    
     // Get paginated entries
-    const entries = await prisma.formEntry.findMany({
+    let entries = await prisma.formEntry.findMany({
       where: whereClause,
-      orderBy: {
+      orderBy: validDbFields.includes(sortBy) ? {
         [sortBy]: sortOrder,
+      } : {
+        createdAt: 'desc', // Default sorting
       },
       skip,
       take: limit,
     })
+
+    // If sorting by a dynamic field (not a database field), sort the results
+    if (!validDbFields.includes(sortBy)) {
+      entries = entries.sort((a, b) => {
+        const aValue = (a.answers as any)?.[sortBy]
+        const bValue = (b.answers as any)?.[sortBy]
+        
+        if (!aValue && !bValue) return 0
+        if (!aValue) return sortOrder === 'asc' ? 1 : -1
+        if (!bValue) return sortOrder === 'asc' ? -1 : 1
+        
+        // Convert to strings for comparison
+        const aStr = String(aValue).toLowerCase()
+        const bStr = String(bValue).toLowerCase()
+        
+        if (sortOrder === 'asc') {
+          return aStr.localeCompare(bStr)
+        } else {
+          return bStr.localeCompare(aStr)
+        }
+      })
+    }
 
     // If search is provided, filter entries on the client side
     // (This is not ideal for large datasets, but works for now)

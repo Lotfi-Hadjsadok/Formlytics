@@ -123,7 +123,7 @@ export default async function FormAnalyticsPage({ params }: FormAnalyticsPagePro
         }
       })
       analytics.optionCounts = optionCounts
-    } else if (field.type === 'checkbox') {
+    } else if (field.type === 'checkbox' || field.type === 'multiselect' || field.type === 'multi-dropdown') {
       const optionCounts: Record<string, number> = {}
       fieldResponses.forEach(response => {
         if (Array.isArray(response)) {

@@ -16,7 +16,7 @@ import { SortableField } from "./SortableField"
 
 interface FormField {
   id: string
-  type: 'text' | 'email' | 'textarea' | 'select' | 'checkbox' | 'radio' | 'number' | 'date'
+  type: 'text' | 'email' | 'textarea' | 'select' | 'multiselect' | 'multi-dropdown' | 'checkbox' | 'radio' | 'number' | 'date'
   label: string
   placeholder?: string
   required: boolean
@@ -36,6 +36,8 @@ const fieldTypes = [
   { value: 'email', label: 'Email', icon: '📧' },
   { value: 'textarea', label: 'Text Area', icon: '📄' },
   { value: 'select', label: 'Dropdown', icon: '📋' },
+  { value: 'multiselect', label: 'Multiselect', icon: '☑️' },
+  { value: 'multi-dropdown', label: 'Multi Dropdown', icon: '📋' },
   { value: 'checkbox', label: 'Checkbox', icon: '☑️' },
   { value: 'radio', label: 'Radio Button', icon: '🔘' },
   { value: 'number', label: 'Number', icon: '🔢' },
@@ -62,7 +64,7 @@ export function SingleStepFormBuilder({ fields, onFieldsChange }: SingleStepForm
       label: `New ${type} field`,
       required: false,
       width: 'full',
-      ...(type === 'select' || type === 'radio' || type === 'checkbox' ? { options: ['Option 1', 'Option 2'] } : {})
+      ...(type === 'select' || type === 'multiselect' || type === 'multi-dropdown' || type === 'radio' || type === 'checkbox' ? { options: ['Option 1', 'Option 2'] } : {})
     }
     
     onFieldsChange([...fields, newField])

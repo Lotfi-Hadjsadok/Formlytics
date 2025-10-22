@@ -25,11 +25,11 @@ import { Switch } from "@/components/ui/switch"
 
 interface FormField {
   id: string
-  type: 'text' | 'email' | 'textarea' | 'select' | 'checkbox' | 'radio' | 'number' | 'date'
+  type: 'text' | 'email' | 'textarea' | 'select' | 'multiselect' | 'multi-dropdown' | 'checkbox' | 'radio' | 'number' | 'date'
   label: string
   placeholder?: string
   required: boolean
-  options?: string[] // For select, radio, checkbox
+  options?: string[] // For select, multiselect, multi-dropdown, radio, checkbox
   width: 'full' | 'half' | 'third' | 'two-thirds'
   styling?: {
     backgroundColor?: string
@@ -500,28 +500,24 @@ export function FormBuilder({ formId, initialData }: FormBuilderProps) {
               <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg">
                 <Switch
                   id="showProgressBar"
-                  checked={formData.settings.showProgressBar !== false && formData.isMultistep}
+                  checked={formData.settings.showProgressBar !== false}
                   onCheckedChange={(checked) => setFormData(prev => ({
                     ...prev,
                     settings: { ...prev.settings, showProgressBar: checked }
                   }))}
-                  disabled={!formData.isMultistep}
                 />
                 <div>
                   <Label htmlFor="showProgressBar" className="text-sm font-medium text-gray-700">
                     Show progress bar
                   </Label>
                   <p className="text-xs text-gray-500">
-                    {formData.isMultistep 
-                      ? "Display completion progress to users (only available for multistep forms)"
-                      : "Enable multistep form to use progress bar"
-                    }
+                    Display completion progress to users and configure step progress style
                   </p>
                 </div>
               </div>
 
-              {/* Step UI Configuration - Only show for multistep forms */}
-              {formData.isMultistep && (
+              {/* Step UI Configuration - Show when progress bar is enabled */}
+              {formData.settings.showProgressBar && (
                 <div className="space-y-3">
                   <Label className="text-sm font-semibold text-gray-700">Step Progress Style</Label>
                   <div className="grid grid-cols-2 gap-3">
