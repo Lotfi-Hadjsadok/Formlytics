@@ -15,11 +15,11 @@ import {
 } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Eye, Layout, Settings } from "lucide-react"
+import { Eye, Layout, Settings, AlertCircle } from "lucide-react"
 import { FormField, FormStep, FormData, FormPreviewProps } from "@/lib/types"
 
 export function FormPreview({ formData }: FormPreviewProps) {
-  const [activePreviewTab, setActivePreviewTab] = useState<'form' | 'thankYou'>('form')
+  const [activePreviewTab, setActivePreviewTab] = useState<'form' | 'thankYou' | 'errorPage'>('form')
 
   const getWidthClass = (width: string) => {
     switch (width) {
@@ -99,6 +99,21 @@ export function FormPreview({ formData }: FormPreviewProps) {
                 <span>Thank You Page</span>
               </div>
             </button>
+            {!formData.settings.allowMultipleSubmissions && (
+              <button
+                className={`flex-1 py-3 px-4 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                  activePreviewTab === 'errorPage' 
+                    ? 'bg-white text-gray-900 shadow-sm border border-gray-200' 
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                }`}
+                onClick={() => setActivePreviewTab('errorPage')}
+              >
+                <div className="flex items-center justify-center space-x-2">
+                  <AlertCircle className="h-4 w-4" />
+                  <span>Error Page</span>
+                </div>
+              </button>
+            )}
           </div>
         </div>
 
@@ -484,6 +499,40 @@ export function FormPreview({ formData }: FormPreviewProps) {
               {!formData.thankYouPage.icon && !formData.thankYouPage.title && !formData.thankYouPage.text && (
                 <div className="text-gray-400">
                   <p>Customize thank you page settings above to see preview</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Error Page Preview */}
+        {activePreviewTab === 'errorPage' && (
+          <div 
+            className="p-8 rounded-xl border-2 border-dashed border-red-200 bg-gradient-to-br from-red-50 to-white"
+            style={{
+              backgroundColor: formData.styling.backgroundColor,
+              color: formData.styling.textColor,
+              fontFamily: formData.styling.fontFamily,
+              borderRadius: formData.styling.borderRadius,
+            }}
+          >
+            <div className="text-center space-y-4">
+              <div className="text-6xl">
+                {formData.errorPage.icon || '⚠️'}
+              </div>
+              
+              <div>
+                <h3 className="text-2xl font-semibold text-red-600">
+                  {formData.errorPage.title || 'Submission Not Allowed'}
+                </h3>
+                <p className="text-sm opacity-75 mt-2 max-w-md mx-auto">
+                  {formData.errorPage.text || 'You have already submitted this form. Multiple submissions are not allowed.'}
+                </p>
+              </div>
+              
+              {!formData.errorPage.icon && !formData.errorPage.title && !formData.errorPage.text && (
+                <div className="text-gray-400">
+                  <p>Customize error page settings above to see preview</p>
                 </div>
               )}
             </div>

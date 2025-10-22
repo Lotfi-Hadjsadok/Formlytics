@@ -15,6 +15,8 @@ export default function PublicFormPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [showError, setShowError] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
 
   useEffect(() => {
     fetchForm()
@@ -34,11 +36,46 @@ export default function PublicFormPage() {
   const handleFormSubmit = async (formData: Record<string, any>) => {
     setSubmitting(true)
     try {
-      await submitFormEntry(formId, formData)
+      // Fetch client information for security tracking
+      let clientInfo = {
+        ipAddress: 'unknown',
+        userAgent: navigator.userAgent,
+        referrer: document.referrer || 'direct'
+      }
+      
+      try {
+        const response = await fetch('/api/client-info')
+        if (response.ok) {
+          const info = await response.json()
+          clientInfo = { ...clientInfo, ...info }
+        }
+      } catch (err) {
+        console.warn('Could not fetch client IP:', err)
+      }
+      
+      // Collect metadata for security tracking
+      const metadata = {
+        source: 'public_form',
+        ...clientInfo,
+        timestamp: new Date().toISOString()
+      }
+      
+      const result = await submitFormEntry(formId, formData, metadata)
+      
+      if (!result.success) {
+        // Show both toast and error page
+        toast.error(result.error || "Multiple submissions not allowed for this form")
+        // Set error state to show error page
+        setShowError(true)
+        setErrorMessage(result.error || "Multiple submissions not allowed for this form")
+        return
+      }
+      
       // Form submission handled by FormRenderer
     } catch (error) {
       console.error('Error submitting form:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to submit form. Please try again.')
+      // Re-throw the error so FormRenderer can handle it
+      throw error
     } finally {
       setSubmitting(false)
     }
@@ -91,13 +128,47 @@ export default function PublicFormPage() {
               </div>
             </div>
 
+        {/* Error Page */}
+        {showError && (
+          <div 
+            className="bg-white rounded-lg shadow-sm border p-8"
+            style={{
+              backgroundColor: form.styling?.backgroundColor || '#ffffff',
+              color: form.styling?.textColor || '#000000',
+              fontFamily: form.styling?.fontFamily || 'var(--font-inter)',
+              borderRadius: form.styling?.borderRadius || '8px',
+            }}
+          >
+            <div className="text-center space-y-6 py-12">
+              <div className="text-6xl">
+                {form.errorPage?.icon || '⚠️'}
+              </div>
+              
+              <div>
+                <h1 className="text-3xl font-bold mb-4">
+                  {form.errorPage?.title || 'Submission Not Allowed'}
+                </h1>
+                <p className="text-lg opacity-75 max-w-2xl mx-auto">
+                  {form.errorPage?.text || errorMessage || 'You have already submitted this form. Multiple submissions are not allowed.'}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Form */}
-        <FormRenderer 
-          form={form as any}
-          onSubmit={handleFormSubmit}
-          submitting={submitting}
-          showHeader={false}
-        />
+        {!showError && (
+          <FormRenderer 
+            form={form as any}
+            onSubmit={handleFormSubmit}
+            submitting={submitting}
+            showHeader={false}
+            onError={(message) => {
+              setShowError(true)
+              setErrorMessage(message)
+            }}
+          />
+        )}
       </div>
     </div>
   )

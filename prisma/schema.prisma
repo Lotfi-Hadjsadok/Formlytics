@@ -120,6 +120,7 @@ model Form {
   styling        Json?       // Store form styling as JSON
   embedding      Json?       // Store embedding settings as JSON (allowedOrigins, tabSpecific, etc.)
   thankYouPage   Json?       // Store thank you page settings as JSON (icon, title, text)
+  errorPage      Json?       // Store error page settings as JSON (icon, title, text)
   isActive       Boolean     @default(true)
   organizationId String
   createdAt      DateTime    @default(now())

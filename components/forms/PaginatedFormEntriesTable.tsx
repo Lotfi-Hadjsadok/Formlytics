@@ -264,7 +264,15 @@ export function PaginatedFormEntriesTable({
       case 'multi-dropdown':
         return Array.isArray(answer) ? answer.join(', ') : answer
       case 'date':
-        return format(new Date(answer), 'MMM dd, yyyy')
+        try {
+          const date = new Date(answer)
+          if (isNaN(date.getTime())) {
+            return String(answer)
+          }
+          return format(date, 'MMM dd, yyyy')
+        } catch {
+          return String(answer)
+        }
       case 'textarea':
         return answer.length > 50 ? `${answer.substring(0, 50)}...` : answer
       default:
@@ -299,7 +307,15 @@ export function PaginatedFormEntriesTable({
           </Badge>
         )
       case 'date':
-        return format(new Date(answer), 'MMM dd, yyyy')
+        try {
+          const date = new Date(answer)
+          if (isNaN(date.getTime())) {
+            return String(answer)
+          }
+          return format(date, 'MMM dd, yyyy')
+        } catch {
+          return String(answer)
+        }
       case 'textarea':
         return answer.length > 50 ? `${answer.substring(0, 50)}...` : answer
       default:
@@ -376,7 +392,14 @@ export function PaginatedFormEntriesTable({
     const csvContent = [
       headers.join(','),
       ...entries.map(entry => [
-        format(new Date(entry.createdAt), 'MMM dd, yyyy HH:mm'),
+        (() => {
+          try {
+            const date = new Date(entry.createdAt)
+            return isNaN(date.getTime()) ? entry.createdAt.toString() : format(date, 'MMM dd, yyyy HH:mm')
+          } catch {
+            return entry.createdAt.toString()
+          }
+        })(),
         ...visibleColumns
           .filter(col => col.id !== 'submitted' && col.id !== 'actions')
           .map(col => {
@@ -561,7 +584,14 @@ export function PaginatedFormEntriesTable({
                       if (column.id === 'submitted') {
                         return (
                           <TableCell key={column.id} className="text-sm text-gray-500">
-                            {format(new Date(entry.createdAt), 'MMM dd, yyyy HH:mm')}
+                            {(() => {
+                              try {
+                                const date = new Date(entry.createdAt)
+                                return isNaN(date.getTime()) ? entry.createdAt.toString() : format(date, 'MMM dd, yyyy HH:mm')
+                              } catch {
+                                return entry.createdAt.toString()
+                              }
+                            })()}
                           </TableCell>
                         )
                       } else if (column.id === 'actions') {
@@ -654,7 +684,14 @@ export function PaginatedFormEntriesTable({
                 </Button>
               </div>
               <p className="text-sm text-gray-500">
-                Submitted on {format(new Date(selectedEntry.createdAt), 'MMM dd, yyyy HH:mm')}
+                Submitted on {(() => {
+                  try {
+                    const date = new Date(selectedEntry.createdAt)
+                    return isNaN(date.getTime()) ? selectedEntry.createdAt.toString() : format(date, 'MMM dd, yyyy HH:mm')
+                  } catch {
+                    return selectedEntry.createdAt.toString()
+                  }
+                })()}
               </p>
             </CardHeader>
             <CardContent className="space-y-4">

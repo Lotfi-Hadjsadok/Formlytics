@@ -55,9 +55,41 @@ export function SortableStepField({
               >
                 <GripVertical className="h-4 w-4 text-gray-400 group-hover:text-gray-600" />
               </div>
-              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                {fieldTypes.find(ft => ft.value === field.type)?.label}
-              </Badge>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="h-7 px-2">
+                    <span className="mr-1 text-xs">
+                      {fieldTypes.find(ft => ft.value === field.type)?.icon}
+                    </span>
+                    <span className="text-xs font-medium">
+                      {fieldTypes.find(ft => ft.value === field.type)?.label}
+                    </span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  {fieldTypes.map((fieldType) => (
+                    <DropdownMenuItem
+                      key={fieldType.value}
+                      onClick={() => {
+                        const updates: Partial<FormField> = { type: fieldType.value as FormField['type'] }
+                        
+                        // Clear options if switching to a field type that doesn't use them
+                        if (!['select', 'multiselect', 'multi-dropdown', 'radio', 'checkbox'].includes(fieldType.value)) {
+                          updates.options = undefined
+                        } else if (!field.options) {
+                          // Add default options if switching to a field type that needs them
+                          updates.options = ['Option 1', 'Option 2']
+                        }
+                        
+                        updateField(stepId, field.id, updates)
+                      }}
+                    >
+                      <span className="mr-2 text-sm">{fieldType.icon}</span>
+                      {fieldType.label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
               <span className="text-sm text-gray-500 font-medium">Field {index + 1}</span>
             </div>
             <Button

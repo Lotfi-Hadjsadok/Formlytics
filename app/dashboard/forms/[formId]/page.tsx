@@ -4,7 +4,7 @@ import { notFound, redirect } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Edit, BarChart3, ExternalLink, Eye, Code } from "lucide-react"
+import { ArrowLeft, Edit, BarChart3, ExternalLink, Eye, Code, Terminal } from "lucide-react"
 import Link from "next/link"
 import { Breadcrumbs } from "@/components/ui/breadcrumbs"
 import { format } from "date-fns"
@@ -239,6 +239,12 @@ export default async function FormDetailPage({ params }: FormDetailPageProps) {
                 <Link href={`/dashboard/forms/${form.id}/embedding`}>
                   <Code className="h-4 w-4 mr-2" />
                   Embedding Settings
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="w-full justify-start">
+                <Link href={`/dashboard/forms/${form.id}/api-docs`}>
+                  <Terminal className="h-4 w-4 mr-2" />
+                  API Documentation
                 </Link>
               </Button>
             </CardContent>

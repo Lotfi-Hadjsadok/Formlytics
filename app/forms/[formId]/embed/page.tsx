@@ -18,6 +18,8 @@ export default function EmbedFormPage() {
   const [error, setError] = useState<string | null>(null)
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [showError, setShowError] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
   const [originError, setOriginError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -105,11 +107,47 @@ export default function EmbedFormPage() {
   const handleSubmit = async (formData: Record<string, any>) => {
     setSubmitting(true)
     try {
-      await submitFormEntry(formId, formData)
+      // Fetch client information for security tracking
+      let clientInfo = {
+        ipAddress: 'unknown',
+        userAgent: navigator.userAgent,
+        referrer: document.referrer || 'direct'
+      }
+      
+      try {
+        const response = await fetch('/api/client-info')
+        if (response.ok) {
+          const info = await response.json()
+          clientInfo = { ...clientInfo, ...info }
+        }
+      } catch (err) {
+        console.warn('Could not fetch client IP:', err)
+      }
+      
+      // Collect metadata for security tracking
+      const metadata = {
+        source: 'embed_form',
+        ...clientInfo,
+        timestamp: new Date().toISOString(),
+        embedOrigin: window.location.origin
+      }
+      
+      const result = await submitFormEntry(formId, formData, metadata)
+      
+      if (!result.success) {
+        // Show both toast and error page
+        toast.error(result.error || "Multiple submissions not allowed for this form")
+        // Set error state to show error page
+        setShowError(true)
+        setErrorMessage(result.error || "Multiple submissions not allowed for this form")
+        return
+      }
+      
       setSubmitted(true)
     } catch (err) {
       console.error('Error submitting form:', err)
-      toast.error(err instanceof Error ? err.message : 'Failed to submit form. Please try again.')
+      // Re-throw the error so FormRenderer can handle it
+      throw err
     } finally {
       setSubmitting(false)
     }
@@ -173,6 +211,35 @@ export default function EmbedFormPage() {
     )
   }
 
+  if (showError) {
+    return (
+      <div className="p-6">
+        <div 
+          className="text-center space-y-6 py-12"
+          style={{
+            backgroundColor: form.styling?.backgroundColor || '#ffffff',
+            color: form.styling?.textColor || '#000000',
+            fontFamily: form.styling?.fontFamily || 'var(--font-inter)',
+            borderRadius: form.styling?.borderRadius || '8px',
+          }}
+        >
+          <div className="text-6xl">
+            {form.errorPage?.icon || '⚠️'}
+          </div>
+          
+          <div>
+            <h1 className="text-3xl font-bold mb-4">
+              {form.errorPage?.title || 'Submission Not Allowed'}
+            </h1>
+            <p className="text-lg opacity-75 max-w-2xl mx-auto">
+              {form.errorPage?.text || errorMessage || 'You have already submitted this form. Multiple submissions are not allowed.'}
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <FormRenderer
       form={form as any}
@@ -180,6 +247,10 @@ export default function EmbedFormPage() {
       submitting={submitting}
       showHeader={false}
       className="p-6"
+      onError={(message) => {
+        setShowError(true)
+        setErrorMessage(message)
+      }}
     />
   )
 }

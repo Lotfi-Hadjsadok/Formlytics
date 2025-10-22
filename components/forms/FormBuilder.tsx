@@ -12,7 +12,8 @@ import {
   Save,
   Type,
   Layout,
-  Loader2
+  Loader2,
+  AlertCircle
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { createForm, updateForm, getForm } from "@/lib/actions"
@@ -50,6 +51,11 @@ export function FormBuilder({ formId, initialData }: FormBuilderProps) {
       icon: '',
       title: '',
       text: ''
+    },
+    errorPage: {
+      icon: '⚠️',
+      title: 'Submission Not Allowed',
+      text: 'You have already submitted this form. Multiple submissions are not allowed.'
     }
   })
   const [isSaving, setIsSaving] = useState(false)
@@ -88,6 +94,11 @@ export function FormBuilder({ formId, initialData }: FormBuilderProps) {
               icon: '',
               title: '',
               text: ''
+            },
+            errorPage: (form.errorPage as any) || {
+              icon: '⚠️',
+              title: 'Submission Not Allowed',
+              text: 'You have already submitted this form. Multiple submissions are not allowed.'
             }
           })
         } catch (error) {
@@ -112,7 +123,8 @@ export function FormBuilder({ formId, initialData }: FormBuilderProps) {
       formTypeSelected: true,
       settings: preset.settings,
       styling: preset.styling,
-      thankYouPage: preset.thankYouPage
+      thankYouPage: preset.thankYouPage,
+      errorPage: preset.errorPage || { icon: '', title: '', text: '' }
     })
     setShowPresets(false)
   }
@@ -152,6 +164,7 @@ export function FormBuilder({ formId, initialData }: FormBuilderProps) {
         settings: formData.settings,
         styling: formData.styling,
         thankYouPage: formData.thankYouPage,
+        errorPage: formData.errorPage,
         // Only include fields or steps based on form type
         ...(formData.isMultistep 
           ? { steps: formData.steps, fields: undefined }
@@ -528,6 +541,67 @@ export function FormBuilder({ formId, initialData }: FormBuilderProps) {
                 className="resize-none"
               />
               <p className="text-xs text-gray-500">Custom message to show after form submission</p>
+            </div>
+          </div>
+        </Collapsible>
+      )}
+
+      {/* Error Page Settings - Only show if multiple submissions are disabled */}
+      {formData.formTypeSelected && !formData.settings.allowMultipleSubmissions && (
+        <Collapsible
+          title="Error Page Settings"
+          description="Customize the error page shown when multiple submissions are not allowed"
+          icon={<AlertCircle className="h-5 w-5 text-red-600" />}
+          defaultOpen={false}
+        >
+          <div className="space-y-6">
+            <div className="space-y-3">
+              <Label className="text-sm font-semibold text-gray-700">Error Icon (Emoji)</Label>
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center text-2xl">
+                  {formData.errorPage.icon || '⚠️'}
+                </div>
+                <Input
+                  value={formData.errorPage.icon || ''}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    errorPage: { ...prev.errorPage, icon: e.target.value }
+                  }))}
+                  placeholder="⚠️"
+                  maxLength={2}
+                  className="h-12 text-lg"
+                />
+              </div>
+              <p className="text-xs text-gray-500">Enter an emoji to display on the error page</p>
+            </div>
+
+            <div className="space-y-3">
+              <Label className="text-sm font-semibold text-gray-700">Error Title</Label>
+              <Input
+                value={formData.errorPage.title || ''}
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  errorPage: { ...prev.errorPage, title: e.target.value }
+                }))}
+                placeholder="Submission Not Allowed"
+                className="h-12 text-lg"
+              />
+              <p className="text-xs text-gray-500">Custom title for the error page</p>
+            </div>
+
+            <div className="space-y-3">
+              <Label className="text-sm font-semibold text-gray-700">Error Message</Label>
+              <Textarea
+                value={formData.errorPage.text || ''}
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  errorPage: { ...prev.errorPage, text: e.target.value }
+                }))}
+                placeholder="You have already submitted this form. Multiple submissions are not allowed."
+                rows={4}
+                className="resize-none"
+              />
+              <p className="text-xs text-gray-500">Custom message to show when submission is blocked</p>
             </div>
           </div>
         </Collapsible>

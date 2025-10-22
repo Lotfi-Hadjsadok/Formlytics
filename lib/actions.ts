@@ -15,6 +15,7 @@ export async function createForm(formData: {
   settings?: any
   styling?: any
   thankYouPage?: any
+  errorPage?: any
 }) {
   try {
     const user = await getUser()
@@ -52,6 +53,7 @@ export async function createForm(formData: {
         settings: formData.settings || {},
         styling: formData.styling || {},
         thankYouPage: formData.thankYouPage || {},
+        errorPage: formData.errorPage || {},
         organizationId: user.organizationId,
       },
     })
@@ -73,6 +75,7 @@ export async function updateForm(formId: string, formData: {
   settings?: any
   styling?: any
   thankYouPage?: any
+  errorPage?: any
 }) {
   try {
     const user = await getUser()
@@ -125,6 +128,7 @@ export async function updateForm(formId: string, formData: {
         settings: formData.settings || {},
         styling: formData.styling || {},
         thankYouPage: formData.thankYouPage || {},
+        errorPage: formData.errorPage || {},
       },
     })
 
@@ -222,7 +226,42 @@ export async function updateEmbeddingSettings(formId: string, embedding: any) {
   }
 }
 
-export async function submitFormEntry(formId: string, answers: Record<string, any>) {
+// Helper function to check for existing submissions
+export async function checkExistingSubmission(formId: string, clientIP?: string): Promise<boolean> {
+  const settings = await prisma.form.findUnique({
+    where: { id: formId },
+    select: { settings: true }
+  })
+  
+  if (!settings?.settings || !(settings.settings as any)?.allowMultipleSubmissions) {
+    let whereClause: any = { formId }
+    
+    // If IP is provided, check for submissions from the same IP
+    if (clientIP) {
+      whereClause = {
+        formId,
+        answers: {
+          path: ['_metadata', 'ipAddress'],
+          equals: clientIP
+        }
+      }
+    }
+    
+    const existingEntry = await prisma.formEntry.findFirst({
+      where: whereClause,
+      orderBy: { createdAt: 'desc' }
+    })
+    
+    if (existingEntry) {
+      return true // Submission already exists
+    }
+  }
+  
+  return false // No existing submission found
+}
+
+// Server action to submit form with IP detection
+export async function submitFormEntryWithIP(formId: string, answers: Record<string, any>, userAgent?: string) {
   try {
     if (!answers || typeof answers !== 'object') {
       throw new Error("Invalid form submission")
@@ -240,11 +279,29 @@ export async function submitFormEntry(formId: string, answers: Record<string, an
       throw new Error("Form not found")
     }
 
-    // Create form entry
+    // Create metadata with available information
+    const metadata = {
+      submittedAt: new Date().toISOString(),
+      userAgent: userAgent || 'unknown',
+      source: 'server_action',
+      // Note: IP address will be detected by the database trigger or application level
+    }
+
+    // Check for existing submissions (without IP for now, as server actions can't access IP directly)
+    const hasExistingSubmission = await checkExistingSubmission(formId)
+    
+    if (hasExistingSubmission) {
+      return { success: false, error: "Multiple submissions not allowed for this form" }
+    }
+
+    // Create form entry with metadata
     const entry = await prisma.formEntry.create({
       data: {
         formId,
-        answers,
+        answers: {
+          ...answers,
+          _metadata: metadata
+        },
       },
     })
 
@@ -252,6 +309,54 @@ export async function submitFormEntry(formId: string, answers: Record<string, an
   } catch (error) {
     console.error("Error submitting form:", error)
     throw new Error(error instanceof Error ? error.message : "Failed to submit form")
+  }
+}
+
+export async function submitFormEntry(formId: string, answers: Record<string, any>, metadata?: Record<string, any>) {
+  try {
+    if (!answers || typeof answers !== 'object') {
+      throw new Error("Invalid form submission")
+    }
+
+    // Verify the form exists and is active
+    const form = await prisma.form.findUnique({
+      where: {
+        id: formId,
+        isActive: true,
+      },
+    })
+
+    if (!form) {
+      throw new Error("Form not found")
+    }
+
+    // Check for existing submissions (IP-based if available)
+    const clientIP = metadata?.ipAddress
+    const hasExistingSubmission = await checkExistingSubmission(formId, clientIP)
+    
+    if (hasExistingSubmission) {
+      return { success: false, error: "Multiple submissions not allowed for this form" }
+    }
+
+    // Create form entry with metadata
+    const entry = await prisma.formEntry.create({
+      data: {
+        formId,
+        answers: {
+          ...answers,
+          _metadata: {
+            submittedAt: new Date().toISOString(),
+            ...metadata
+          }
+        },
+      },
+    })
+
+    return { success: true, entryId: entry.id }
+  } catch (error) {
+    console.error("Error submitting form:", error)
+    // Preserve the original error message instead of wrapping it
+    throw error
   }
 }
 

@@ -58,6 +58,13 @@ export interface ThankYouPage {
   text?: string
 }
 
+// Error page interface
+export interface ErrorPage {
+  icon?: string
+  title?: string
+  text?: string
+}
+
 // Main form interface
 export interface Form {
   id: string
@@ -69,6 +76,7 @@ export interface Form {
   settings: FormSettings
   styling: FormStyling
   thankYouPage?: ThankYouPage
+  errorPage?: ErrorPage
   embedding?: EmbeddingSettings
   _count: {
     entries: number
@@ -86,6 +94,7 @@ export interface FormData {
   settings: FormSettings
   styling: FormStyling
   thankYouPage: ThankYouPage
+  errorPage: ErrorPage
 }
 
 // Form renderer props interface
@@ -95,6 +104,7 @@ export interface FormRendererProps {
   submitting?: boolean
   showHeader?: boolean
   className?: string
+  onError?: (error: string) => void
 }
 
 // Form builder props interface

@@ -25,7 +25,8 @@ export function FormRenderer({
   onSubmit, 
   submitting = false, 
   showHeader = true,
-  className = ""
+  className = "",
+  onError
 }: FormRendererProps) {
   const [formData, setFormData] = useState<Record<string, any>>(() => {
     const initialData: Record<string, any> = {}
@@ -54,6 +55,8 @@ export function FormRenderer({
     return initialData
   })
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [isError, setIsError] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
   const [currentStep, setCurrentStep] = useState(0)
 
   const handleInputChange = (fieldId: string, value: any) => {
@@ -141,8 +144,17 @@ export function FormRenderer({
     }
 
     // If it's the last step or single-step form, submit
-    await onSubmit(formData)
-    setIsSubmitted(true)
+    try {
+      await onSubmit(formData)
+      setIsSubmitted(true)
+      setIsError(false)
+    } catch (error) {
+      setIsError(true)
+      setErrorMessage(error instanceof Error ? error.message : 'An error occurred')
+      if (onError) {
+        onError(error instanceof Error ? error.message : 'An error occurred')
+      }
+    }
   }
 
   const handlePreviousStep = () => {
@@ -221,6 +233,39 @@ export function FormRenderer({
       fontSize: field.styling?.fontSize || '14px',
       padding: field.styling?.padding || '8px 12px',
     }
+  }
+
+  // Show error page if there's an error
+  if (isError) {
+    return (
+      <div 
+        className={className}
+        style={{ 
+          backgroundColor: form.styling?.backgroundColor || '#ffffff',
+          minHeight: 'fit-content'
+        }}
+      >
+        <div 
+          className="max-w-4xl mx-auto"
+          style={getFormStyles()}
+        >
+          <div className="text-center space-y-6 py-12">
+            <div className="text-6xl">
+              {form.errorPage?.icon || '⚠️'}
+            </div>
+            
+            <div>
+              <h1 className="text-3xl font-bold mb-4">
+                {form.errorPage?.title || 'Submission Not Allowed'}
+              </h1>
+              <p className="text-lg opacity-75 max-w-2xl mx-auto">
+                {form.errorPage?.text || errorMessage || 'You have already submitted this form. Multiple submissions are not allowed.'}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   // Show thank you page if form is submitted
