@@ -1,5 +1,5 @@
 // Form field types
-export type FieldType = 'text' | 'email' | 'textarea' | 'select' | 'multiselect' | 'multi-dropdown' | 'checkbox' | 'radio' | 'number' | 'date'
+export type FieldType = 'text' | 'email' | 'textarea' | 'select' | 'multiselect' | 'multi-dropdown' | 'checkbox' | 'radio' | 'number' | 'date' | 'title' | 'separator'
 
 export type FieldWidth = 'full' | 'half' | 'third' | 'two-thirds'
 
@@ -12,6 +12,12 @@ export interface FieldStyling {
   borderColor?: string
   fontSize?: string
   padding?: string
+  // Title field specific styling
+  titleFontSize?: string
+  // Separator field specific styling
+  separatorWidth?: string
+  separatorVerticalSpacing?: string
+  separatorBorderWidth?: string
 }
 
 // Form field interface
@@ -42,6 +48,18 @@ export interface FormSettings {
   submitButtonText: string
 }
 
+// Device-specific styling interface
+export interface DeviceStyling {
+  backgroundColor?: string
+  textColor?: string
+  primaryColor?: string
+  fontFamily?: string
+  borderRadius?: string
+  fontSize?: string
+  padding?: string
+  margin?: string
+}
+
 // Form styling interface
 export interface FormStyling {
   backgroundColor: string
@@ -49,6 +67,10 @@ export interface FormStyling {
   primaryColor: string
   fontFamily: string
   borderRadius: string
+  // Device-specific overrides
+  desktop?: DeviceStyling
+  tablet?: DeviceStyling
+  mobile?: DeviceStyling
 }
 
 // Thank you page interface
@@ -105,6 +127,10 @@ export interface FormRendererProps {
   showHeader?: boolean
   className?: string
   onError?: (error: string) => void
+  editMode?: boolean
+  onFieldSettings?: (field: FormField) => void
+  onFieldUpdate?: (fieldId: string, updates: Partial<FormField>) => void
+  onFieldDelete?: (fieldId: string) => void
 }
 
 // Form builder props interface
@@ -179,6 +205,8 @@ export const fieldTypes = [
   { value: 'radio', label: 'Radio Button', icon: '🔘' },
   { value: 'number', label: 'Number', icon: '🔢' },
   { value: 'date', label: 'Date', icon: '📅' },
+  { value: 'title', label: 'Title', icon: '📰' },
+  { value: 'separator', label: 'Separator', icon: '➖' },
 ] as const
 
 // Width options for field configuration
@@ -204,6 +232,7 @@ export interface FormPreset {
   settings: FormSettings
   styling: FormStyling
   thankYouPage: ThankYouPage
+  errorPage?: ErrorPage
 }
 
 // Form presets

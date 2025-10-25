@@ -1,33 +1,129 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { DatePicker } from "@/components/ui/date-picker"
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import { Checkbox } from "@/components/ui/checkbox"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { toast } from "sonner"
 import { StepProgressIndicator } from "./StepProgressIndicator"
+import { FieldRenderer } from "./FieldRenderer"
 import { FormField, FormStep, Form, FormRendererProps } from "@/lib/types"
+import { getDeviceStyles } from "@/lib/utils"
+import { 
+  SortableContext, 
+  verticalListSortingStrategy,
+  useSortable
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
+// Sortable Field Wrapper Component
+interface SortableFieldWrapperProps {
+  field: FormField
+  formData: Record<string, any>
+  handleFieldChange: (fieldId: string, value: any) => void
+  editMode: boolean
+  onFieldSettings?: (field: FormField) => void
+  onFieldUpdate?: (fieldId: string, updates: Partial<FormField>) => void
+  onFieldDelete?: (fieldId: string) => void
+  formStyling: any
+  getWidthStyle: (width: string) => any
+}
+
+function SortableFieldWrapper({
+  field,
+  formData,
+  handleFieldChange,
+  editMode,
+  onFieldSettings,
+  onFieldUpdate,
+  onFieldDelete,
+  formStyling,
+  getWidthStyle
+}: SortableFieldWrapperProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: field.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition: isDragging ? 'none' : transition,
+    opacity: isDragging ? 0.5 : 1,
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        ...style,
+        ...getWidthStyle(field.width)
+      }}
+      className={`w-full md:w-auto ${isDragging ? 'opacity-50' : ''}`}
+    >
+      <FieldRenderer
+        field={field}
+        value={formData[field.id]}
+        onChange={(value) => handleFieldChange(field.id, value)}
+        editMode={editMode}
+        onFieldSettings={onFieldSettings}
+        onFieldUpdate={(updates) => onFieldUpdate?.(field.id, updates)}
+        onFieldDelete={onFieldDelete}
+        formStyling={formStyling}
+        dragHandleProps={editMode ? {
+          attributes,
+          listeners
+        } : undefined}
+      />
+    </div>
+  )
+}
+
+/**
+ * FormRenderer - Renders forms for end users to fill out
+ * 
+ * @param editMode - When true, shows field settings icons next to field labels
+ * @param onFieldSettings - Callback when field settings icon is clicked (only used when editMode=true)
+ * 
+ * Usage:
+ * - For public forms: Use with editMode=false (default)
+ * - For form editing: Use with editMode=true and provide onFieldSettings callback
+ */
 export function FormRenderer({ 
   form, 
   onSubmit, 
   submitting = false, 
   showHeader = true,
   className = "",
-  onError
+  onError,
+  editMode = false,
+  onFieldSettings,
+  onFieldUpdate,
+  onFieldDelete
 }: FormRendererProps) {
+  // Detect device type based on screen width
+  const getDeviceType = (): 'desktop' | 'tablet' | 'mobile' => {
+    if (typeof window === 'undefined') return 'desktop'
+    const width = window.innerWidth
+    if (width < 768) return 'mobile'
+    if (width < 1024) return 'tablet'
+    return 'desktop'
+  }
+
+  const [deviceType, setDeviceType] = useState<'desktop' | 'tablet' | 'mobile'>(getDeviceType)
+
+  // Update device type on resize
+  useEffect(() => {
+    const handleResize = () => {
+      setDeviceType(getDeviceType())
+    }
+    
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', handleResize)
+      return () => window.removeEventListener('resize', handleResize)
+    }
+  }, [])
   const [formData, setFormData] = useState<Record<string, any>>(() => {
     const initialData: Record<string, any> = {}
     
@@ -59,62 +155,11 @@ export function FormRenderer({
   const [errorMessage, setErrorMessage] = useState('')
   const [currentStep, setCurrentStep] = useState(0)
 
-  const handleInputChange = (fieldId: string, value: any) => {
+  const handleFieldChange = (fieldId: string, value: any) => {
     setFormData(prev => ({
       ...prev,
       [fieldId]: value
     }))
-  }
-
-  const handleCheckboxChange = (fieldId: string, option: string, checked: boolean) => {
-    setFormData(prev => {
-      const currentValues = prev[fieldId] || []
-      if (checked) {
-        return {
-          ...prev,
-          [fieldId]: [...currentValues, option]
-        }
-      } else {
-        return {
-          ...prev,
-          [fieldId]: currentValues.filter((v: string) => v !== option)
-        }
-      }
-    })
-  }
-
-  const handleMultiselectChange = (fieldId: string, option: string, checked: boolean) => {
-    setFormData(prev => {
-      const currentValues = prev[fieldId] || []
-      if (checked) {
-        return {
-          ...prev,
-          [fieldId]: [...currentValues, option]
-        }
-      } else {
-        return {
-          ...prev,
-          [fieldId]: currentValues.filter((v: string) => v !== option)
-        }
-      }
-    })
-  }
-
-  const handleMultiDropdownChange = (fieldId: string, option: string, checked: boolean) => {
-    setFormData(prev => {
-      const currentValues = prev[fieldId] || []
-      if (checked) {
-        return {
-          ...prev,
-          [fieldId]: [...currentValues, option]
-        }
-      } else {
-        return {
-          ...prev,
-          [fieldId]: currentValues.filter((v: string) => v !== option)
-        }
-      }
-    })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -169,70 +214,18 @@ export function FormRenderer({
     }
   }
 
-  const getWidthClass = (width: string) => {
+  const getWidthStyle = (width: string) => {
     switch (width) {
-      case 'half': return 'md:col-span-1'
-      case 'third': return 'md:col-span-1'
-      case 'two-thirds': return 'md:col-span-2'
-      case 'full': return 'md:col-span-2'
-      default: return 'md:col-span-2'
+      case 'half': return { flex: '1 1 calc(50% - 0.5rem)', minWidth: 0, maxWidth: 'calc(50% - 0.5rem)' }
+      case 'third': return { flex: '1 1 calc(33.333% - 0.67rem)', minWidth: 0, maxWidth: 'calc(33.333% - 0.67rem)' }
+      case 'two-thirds': return { flex: '1 1 calc(66.666% - 0.33rem)', minWidth: 0, maxWidth: 'calc(66.666% - 0.33rem)' }
+      case 'full': return { flex: '1 1 100%', minWidth: 0, maxWidth: '100%' }
+      default: return { flex: '1 1 100%', minWidth: 0, maxWidth: '100%' }
     }
-  }
-
-  const getWidthValue = (width: string) => {
-    switch (width) {
-      case 'half': return 0.5
-      case 'third': return 0.33
-      case 'two-thirds': return 0.67
-      case 'full': return 1
-      default: return 1
-    }
-  }
-
-  const organizeFieldsIntoRows = (fields: FormField[]) => {
-    const rows: FormField[][] = []
-    let currentRow: FormField[] = []
-    let currentRowWidth = 0
-
-    fields.forEach(field => {
-      const fieldWidth = getWidthValue(field.width)
-      
-      // If adding this field would exceed 1.0 width, start a new row
-      if (currentRowWidth + fieldWidth > 1.0 && currentRow.length > 0) {
-        rows.push([...currentRow])
-        currentRow = [field]
-        currentRowWidth = fieldWidth
-      } else {
-        currentRow.push(field)
-        currentRowWidth += fieldWidth
-      }
-    })
-
-    // Add the last row if it has fields
-    if (currentRow.length > 0) {
-      rows.push(currentRow)
-    }
-
-    return rows
   }
 
   const getFormStyles = () => {
-    return {
-      backgroundColor: form.styling?.backgroundColor || '#ffffff',
-      color: form.styling?.textColor || '#000000',
-      fontFamily: form.styling?.fontFamily || 'var(--font-inter)',
-      borderRadius: form.styling?.borderRadius || '8px',
-    }
-  }
-
-  const getFieldStyles = (field: FormField) => {
-    return {
-      backgroundColor: field.styling?.backgroundColor || 'transparent',
-      color: field.styling?.textColor || form.styling?.textColor || '#000000',
-      borderColor: field.styling?.borderColor || '#d1d5db',
-      fontSize: field.styling?.fontSize || '14px',
-      padding: field.styling?.padding || '8px 12px',
-    }
+    return getDeviceStyles(form.styling, deviceType)
   }
 
   // Show error page if there's an error
@@ -332,217 +325,29 @@ export function FormRenderer({
               ? form.steps[currentStep]?.fields || []
               : form.fields || []
             
-            const organizedRows = organizeFieldsIntoRows(currentFields)
-            
-            return organizedRows.map((row, rowIndex) => (
-              <div key={rowIndex} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {row.map((field) => (
-                  <div 
-                    key={field.id} 
-                    className={`space-y-2 ${getWidthClass(field.width)}`}
-                    style={getFieldStyles(field)}
-                  >
-                    <Label htmlFor={field.id} className="text-sm font-medium">
-                      {field.label}
-                      {field.required && <span className="text-red-500 ml-1">*</span>}
-                    </Label>
-                
-                {field.type === 'text' && (
-                  <Input
-                    id={field.id}
-                    type="text"
-                    value={formData[field.id] || ''}
-                    onChange={(e) => handleInputChange(field.id, e.target.value)}
-                    placeholder={field.placeholder}
-                    required={field.required}
-                  />
-                )}
-                
-                {field.type === 'email' && (
-                  <Input
-                    id={field.id}
-                    type="email"
-                    value={formData[field.id] || ''}
-                    onChange={(e) => handleInputChange(field.id, e.target.value)}
-                    placeholder={field.placeholder}
-                    required={field.required}
-                  />
-                )}
-                
-                {field.type === 'textarea' && (
-                  <Textarea
-                    id={field.id}
-                    value={formData[field.id] || ''}
-                    onChange={(e) => handleInputChange(field.id, e.target.value)}
-                    placeholder={field.placeholder}
-                    required={field.required}
-                    rows={4}
-                  />
-                )}
-                
-                {field.type === 'number' && (
-                  <Input
-                    id={field.id}
-                    type="number"
-                    value={formData[field.id] || ''}
-                    onChange={(e) => handleInputChange(field.id, e.target.value)}
-                    placeholder={field.placeholder}
-                    required={field.required}
-                  />
-                )}
-                
-                {field.type === 'date' && (
-                  <DatePicker
-                    value={formData[field.id] || ''}
-                    onChange={(value) => handleInputChange(field.id, value)}
-                    placeholder="Pick a date"
-                    required={field.required}
-                  />
-                )}
-                
-                {field.type === 'select' && (
-                  <Select
-                    value={formData[field.id] || ''}
-                    onValueChange={(value) => handleInputChange(field.id, value)}
-                    required={field.required}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select an option" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {field.options?.map((option, index) => (
-                        <SelectItem key={index} value={option}>
-                          {option}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-                
-                {field.type === 'multiselect' && (
-                  <div className="space-y-2">
-                    {field.options?.map((option, index) => (
-                      <div key={index} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`${field.id}-${index}`}
-                          checked={(formData[field.id] || []).includes(option)}
-                          onCheckedChange={(checked) => handleMultiselectChange(field.id, option, checked as boolean)}
-                        />
-                        <Label htmlFor={`${field.id}-${index}`} className="text-sm">
-                          {option}
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                
-                {field.type === 'multi-dropdown' && (
-                  <div className="space-y-2">
-                    <Select
-                      value=""
-                      onValueChange={(value) => {
-                        if (value && !(formData[field.id] || []).includes(value)) {
-                          handleMultiDropdownChange(field.id, value, true)
-                        }
-                      }}
-                    >
-                      <SelectTrigger 
-                        className="min-h-[40px] h-auto"
-                        onPointerDown={(e) => {
-                          // Prevent dropdown from opening when clicking on badges
-                          if ((e.target as HTMLElement).closest('[data-badge]')) {
-                            e.preventDefault()
-                          }
-                        }}
-                      >
-                        <div className="flex flex-wrap gap-1 w-full">
-                          {(formData[field.id] || []).length > 0 ? (
-                            (formData[field.id] || []).map((selectedOption: string, index: number) => (
-                              <Badge 
-                                key={index} 
-                                variant="secondary" 
-                                className="text-xs px-2 py-1 cursor-pointer hover:bg-red-100 hover:text-red-700 transition-colors"
-                                data-badge="true"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  e.preventDefault()
-                                  handleMultiDropdownChange(field.id, selectedOption, false)
-                                }}
-                              >
-                                {selectedOption}
-                                <span className="ml-1">
-                                  ×
-                                </span>
-                              </Badge>
-                            ))
-                          ) : (
-                            <span className="text-muted-foreground text-sm">Select options...</span>
-                          )}
-                        </div>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {field.options?.map((option, index) => {
-                          const isSelected = (formData[field.id] || []).includes(option)
-                          return (
-                            <div
-                              key={index}
-                              className={`cursor-pointer px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground ${isSelected ? "bg-muted text-muted-foreground" : ""}`}
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleMultiDropdownChange(field.id, option, !isSelected)
-                              }}
-                            >
-                              <div className="flex items-center gap-2">
-                                {isSelected && (
-                                  <span className="text-black font-bold">✓</span>
-                                )}
-                                {option}
-                              </div>
-                            </div>
-                          )
-                        })}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-                
-                {field.type === 'radio' && (
-                  <RadioGroup
-                    value={formData[field.id] || ''}
-                    onValueChange={(value) => handleInputChange(field.id, value)}
-                    required={field.required}
-                  >
-                    {field.options?.map((option, index) => (
-                      <div key={index} className="flex items-center space-x-2">
-                        <RadioGroupItem value={option} id={`${field.id}-${index}`} />
-                        <Label htmlFor={`${field.id}-${index}`} className="text-sm">
-                          {option}
-                        </Label>
-                      </div>
-                    ))}
-                  </RadioGroup>
-                )}
-                
-                {field.type === 'checkbox' && (
-                  <div className="space-y-2">
-                    {field.options?.map((option, index) => (
-                      <div key={index} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`${field.id}-${index}`}
-                          checked={(formData[field.id] || []).includes(option)}
-                          onCheckedChange={(checked) => handleCheckboxChange(field.id, option, checked as boolean)}
-                        />
-                        <Label htmlFor={`${field.id}-${index}`} className="text-sm">
-                          {option}
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                  </div>
-                ))}
-              </div>
-            ))
+            return (
+              <SortableContext
+                items={currentFields.map(field => field.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="flex flex-wrap gap-4">
+                  {currentFields.map((field) => (
+                    <SortableFieldWrapper
+                      key={field.id}
+                      field={field}
+                      formData={formData}
+                      handleFieldChange={handleFieldChange}
+                      editMode={editMode}
+                      onFieldSettings={onFieldSettings}
+                      onFieldUpdate={onFieldUpdate}
+                      onFieldDelete={onFieldDelete}
+                      formStyling={form.styling}
+                      getWidthStyle={getWidthStyle}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            )
           })()}
           
           <div className="pt-4">

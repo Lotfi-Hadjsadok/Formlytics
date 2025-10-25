@@ -44,7 +44,7 @@ export default async function DashboardPage() {
           <p className="text-gray-600 mt-2">Here's what's happening with your forms today.</p>
         </div>
         <Button asChild>
-          <Link href="/dashboard/forms/new">
+          <Link href="/form-builder/new">
             <Plus className="h-4 w-4 mr-2" />
             Create Form
           </Link>

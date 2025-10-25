@@ -74,7 +74,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <a href="/dashboard/forms/new">
+                  <a href="/form-builder/new">
                     <Plus className="h-4 w-4" />
                     <span>Create Form</span>
                   </a>

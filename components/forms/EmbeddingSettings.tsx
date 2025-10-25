@@ -50,8 +50,8 @@ export default function EmbeddingSettingsPage() {
   const fetchForm = async () => {
     try {
       const formData = await getForm(formId)
-      setForm(formData)
-      setEmbeddingSettings(formData.embedding || {
+      setForm(formData as unknown as Form)
+      setEmbeddingSettings((formData.embedding as any) || {
         allowedOrigins: [],
         requireOrigin: false
       })

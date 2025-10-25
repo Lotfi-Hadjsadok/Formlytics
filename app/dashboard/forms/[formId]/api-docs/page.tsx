@@ -22,7 +22,7 @@ export default function ApiDocumentationPage({ params }: ApiDocumentationPagePro
     const fetchForm = async () => {
       try {
         const formData = await getForm(formId)
-        setForm(formData)
+        setForm(formData as unknown as Form)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load form')
       } finally {

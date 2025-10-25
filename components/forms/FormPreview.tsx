@@ -21,13 +21,13 @@ import { FormField, FormStep, FormData, FormPreviewProps } from "@/lib/types"
 export function FormPreview({ formData }: FormPreviewProps) {
   const [activePreviewTab, setActivePreviewTab] = useState<'form' | 'thankYou' | 'errorPage'>('form')
 
-  const getWidthClass = (width: string) => {
+  const getWidthStyle = (width: string) => {
     switch (width) {
-      case 'half': return 'md:col-span-1'
-      case 'third': return 'md:col-span-1'
-      case 'two-thirds': return 'md:col-span-2'
-      case 'full': return 'md:col-span-2'
-      default: return 'md:col-span-2'
+      case 'half': return { flex: '1 1 50%', minWidth: 0 }
+      case 'third': return { flex: '1 1 33.333%', minWidth: 0 }
+      case 'two-thirds': return { flex: '1 1 66.666%', minWidth: 0 }
+      case 'full': return { flex: '1 1 100%', minWidth: 0 }
+      default: return { flex: '1 1 100%', minWidth: 0 }
     }
   }
 
@@ -156,14 +156,14 @@ export function FormPreview({ formData }: FormPreviewProps) {
                       
                       {(() => {
                         const stepFields = formData.steps[0]?.fields || []
-                        const organizedRows = organizeFieldsIntoRows(stepFields)
                         
-                        return organizedRows.map((row, rowIndex) => (
-                          <div key={rowIndex} className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-4">
-                            {row.map((field) => (
+                        return (
+                          <div className="flex flex-wrap gap-2 mb-4">
+                            {stepFields.map((field) => (
                               <div 
                                 key={field.id} 
-                                className={`space-y-2 ${getWidthClass(field.width)}`}
+                                className="w-full md:w-auto space-y-2"
+                                style={getWidthStyle(field.width)}
                               >
                                 <Label className="text-sm font-medium">
                                   {field.label}
@@ -284,7 +284,7 @@ export function FormPreview({ formData }: FormPreviewProps) {
                               </div>
                             ))}
                           </div>
-                        ))
+                        )
                       })()}
                     </div>
                     
@@ -316,14 +316,13 @@ export function FormPreview({ formData }: FormPreviewProps) {
               ) : formData.fields.length > 0 ? (
                 <div className="space-y-4">
                   {(() => {
-                    const organizedRows = organizeFieldsIntoRows(formData.fields)
-                    
-                    return organizedRows.map((row, rowIndex) => (
-                      <div key={rowIndex} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {row.map((field) => (
+                    return (
+                      <div className="flex flex-wrap gap-4">
+                        {formData.fields.map((field) => (
                           <div 
                             key={field.id} 
-                            className={`space-y-2 ${getWidthClass(field.width)}`}
+                            className="w-full md:w-auto space-y-2"
+                            style={getWidthStyle(field.width)}
                           >
                             <Label className="text-sm font-medium">
                               {field.label}

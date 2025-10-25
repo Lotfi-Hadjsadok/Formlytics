@@ -95,8 +95,8 @@ export default function EmbedFormPage() {
 
   const fetchForm = async () => {
     try {
-      const formData = await getForm(formId)
-      setForm(formData)
+        const formData = await getForm(formId)
+        setForm(formData as unknown as Form)
     } catch (err) {
       setError('Failed to load form')
     } finally {

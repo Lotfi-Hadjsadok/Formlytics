@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -14,20 +14,94 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu"
 import { Plus, Layout, Trash2 } from "lucide-react"
-import { useSensor, useSensors, PointerSensor, KeyboardSensor, DragEndEvent, DndContext, closestCenter } from '@dnd-kit/core'
-import { SortableContext, verticalListSortingStrategy, sortableKeyboardCoordinates } from '@dnd-kit/sortable'
-import { arrayMove } from '@dnd-kit/sortable'
+import { 
+  DndContext, 
+  DragOverlay, 
+  useSensor, 
+  useSensors, 
+  PointerSensor, 
+  KeyboardSensor, 
+  DragEndEvent, 
+  DragStartEvent,
+  closestCenter,
+  closestCorners,
+  rectIntersection,
+  pointerWithin,
+  useDraggable,
+  useDroppable
+} from '@dnd-kit/core'
+import { 
+  SortableContext, 
+  verticalListSortingStrategy, 
+  sortableKeyboardCoordinates,
+  arrayMove,
+  useSortable
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { SortableStepField } from "./SortableStepField"
 import { Collapsible } from "@/components/ui/collapsible"
 import { FormField, FormStep, MultiStepFormBuilderProps, fieldTypes } from "@/lib/types"
 
 export function MultiStepFormBuilder({ steps, onStepsChange }: MultiStepFormBuilderProps) {
+  const [draggedField, setDraggedField] = useState<FormField | null>(null)
+
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5,
+        delay: 100,
+        tolerance: 5,
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   )
+
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    const { active } = event
+    const fieldId = active.id as string
+    
+    // Find the field being dragged
+    for (const step of steps) {
+      const field = step.fields.find(f => f.id === fieldId)
+      if (field) {
+        setDraggedField(field)
+        return
+      }
+    }
+  }, [steps])
+
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event
+    setDraggedField(null)
+
+    if (!over || active.id === over.id) return
+
+    // Create a map for faster lookups
+    const fieldToStepMap = new Map<string, { step: FormStep; fieldIndex: number }>()
+    steps.forEach(step => {
+      step.fields.forEach((field, index) => {
+        fieldToStepMap.set(field.id, { step, fieldIndex: index })
+      })
+    })
+
+    const sourceData = fieldToStepMap.get(active.id as string)
+    const targetData = fieldToStepMap.get(over.id as string)
+
+    if (sourceData && targetData && sourceData.step.id === targetData.step.id) {
+      const { step, fieldIndex: oldIndex } = sourceData
+      const { fieldIndex: newIndex } = targetData
+      
+      if (oldIndex !== newIndex) {
+        const updatedFields = arrayMove(step.fields, oldIndex, newIndex)
+        const updatedSteps = steps.map(s => 
+          s.id === step.id ? { ...s, fields: updatedFields } : s
+        )
+        onStepsChange(updatedSteps)
+      }
+    }
+  }, [steps, onStepsChange])
 
   const addStep = () => {
     const newStep: FormStep = {
@@ -139,64 +213,27 @@ export function MultiStepFormBuilder({ steps, onStepsChange }: MultiStepFormBuil
     ))
   }
 
-  const handleStepDragEnd = (stepId: string) => (event: DragEndEvent) => {
-    const { active, over } = event
-
-    if (over && active.id !== over.id) {
-      onStepsChange(steps.map(step => {
-        if (step.id === stepId) {
-          const oldIndex = step.fields.findIndex(field => field.id === active.id)
-          const newIndex = step.fields.findIndex(field => field.id === over.id)
-          
-          return {
-            ...step,
-            fields: arrayMove(step.fields, oldIndex, newIndex)
-          }
-        }
-        return step
-      }))
+  // Custom collision detection for better field detection
+  const customCollisionDetection = (args: any) => {
+    // First try pointerWithin for better accuracy
+    const pointerCollisions = pointerWithin(args)
+    
+    if (pointerCollisions.length > 0) {
+      return pointerCollisions
     }
-  }
-
-  const getWidthValue = (width: string) => {
-    switch (width) {
-      case 'half': return 0.5
-      case 'third': return 0.33
-      case 'two-thirds': return 0.67
-      case 'full': return 1
-      default: return 1
-    }
-  }
-
-  const organizeFieldsIntoRows = (fields: FormField[]) => {
-    const rows: FormField[][] = []
-    let currentRow: FormField[] = []
-    let currentRowWidth = 0
-
-    fields.forEach(field => {
-      const fieldWidth = getWidthValue(field.width)
-      
-      // If adding this field would exceed 1.0 width, start a new row
-      if (currentRowWidth + fieldWidth > 1.0 && currentRow.length > 0) {
-        rows.push([...currentRow])
-        currentRow = [field]
-        currentRowWidth = fieldWidth
-      } else {
-        currentRow.push(field)
-        currentRowWidth += fieldWidth
-      }
-    })
-
-    // Add the last row if it has fields
-    if (currentRow.length > 0) {
-      rows.push(currentRow)
-    }
-
-    return rows
+    
+    // Fall back to closestCorners
+    return closestCorners(args)
   }
 
   return (
-    <div className="space-y-4">
+    <DndContext
+      sensors={sensors}
+      collisionDetection={customCollisionDetection}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+    >
+      <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-semibold text-gray-800">Steps</h3>
@@ -318,45 +355,30 @@ export function MultiStepFormBuilder({ steps, onStepsChange }: MultiStepFormBuil
                         <p className="text-sm">No fields in this step yet</p>
                       </div>
                     ) : (
-                      <DndContext
-                        sensors={sensors}
-                        collisionDetection={closestCenter}
-                        onDragEnd={handleStepDragEnd(step.id)}
+                      <SortableContext
+                        items={step.fields.map(field => field.id)}
+                        strategy={verticalListSortingStrategy}
                       >
-                        <SortableContext
-                          items={step.fields.map(field => field.id)}
-                          strategy={verticalListSortingStrategy}
-                        >
-                          <div className="space-y-4">
-                            {(() => {
-                              const organizedRows = organizeFieldsIntoRows(step.fields)
-                              
-                              return organizedRows.map((row, rowIndex) => (
-                                <div key={rowIndex} className="flex flex-col md:flex-row gap-4">
-                                  {row.map((field, fieldIndex) => {
-                                    const globalFieldIndex = step.fields.findIndex(f => f.id === field.id)
-                                    const flexClass = field.width === 'full' ? 'w-full' : field.width === 'half' ? 'w-full md:w-1/2' : field.width === 'two-thirds' ? 'w-full md:w-2/3' : 'w-full md:w-1/3'
-                                    return (
-                                      <div key={field.id} className={`${flexClass} transition-all duration-300 ease-in-out`} style={{ minWidth: 0 }}>
-                                        <SortableStepField
-                                          field={field}
-                                          stepId={step.id}
-                                          index={globalFieldIndex}
-                                          updateField={updateFieldInStep}
-                                          removeField={removeFieldFromStep}
-                                          addOption={addOptionToStep}
-                                          updateOption={updateOptionInStep}
-                                          removeOption={removeOptionFromStep}
-                                        />
-                                      </div>
-                                    )
-                                  })}
-                                </div>
-                              ))
-                            })()}
-                          </div>
-                        </SortableContext>
-                      </DndContext>
+                        <div className="space-y-3">
+                          {step.fields.map((field, index) => {
+                            const flexClass = field.width === 'full' ? 'w-full' : field.width === 'half' ? 'w-full md:w-1/2' : field.width === 'two-thirds' ? 'w-full md:w-2/3' : 'w-full md:w-1/3'
+                            return (
+                              <div key={field.id} className={`${flexClass}`}>
+                                <SortableStepField
+                                  field={field}
+                                  stepId={step.id}
+                                  index={index}
+                                  updateField={updateFieldInStep}
+                                  removeField={removeFieldFromStep}
+                                  addOption={addOptionToStep}
+                                  updateOption={updateOptionInStep}
+                                  removeOption={removeOptionFromStep}
+                                />
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </SortableContext>
                     )}
                   </div>
                 </div>
@@ -364,6 +386,23 @@ export function MultiStepFormBuilder({ steps, onStepsChange }: MultiStepFormBuil
             ))}
           </div>
         )}
-    </div>
+      </div>
+
+      {/* Drag Overlay */}
+      <DragOverlay>
+        {draggedField ? (
+          <Card className="shadow-2xl opacity-95 scale-105 border-blue-400 bg-white">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl flex items-center justify-center text-blue-600 shadow-md">
+                  <Layout className="h-4 w-4" />
+                </div>
+                <span className="text-sm font-semibold text-gray-900">{draggedField.label}</span>
+              </div>
+            </CardContent>
+          </Card>
+        ) : null}
+      </DragOverlay>
+    </DndContext>
   )
 }

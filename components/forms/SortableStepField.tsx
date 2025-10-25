@@ -1,5 +1,6 @@
 "use client"
 
+import { memo } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -17,7 +18,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { FormField, SortableStepFieldProps, fieldTypes, widthOptions } from "@/lib/types"
 
 
-export function SortableStepField({ 
+export const SortableStepField = memo(function SortableStepField({ 
   field, 
   stepId,
   index, 
@@ -38,8 +39,9 @@ export function SortableStepField({
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
+    transition: isDragging ? 'none' : transition,
+    opacity: isDragging ? 0.3 : 1,
+    zIndex: isDragging ? 1000 : 'auto',
   }
 
   return (
@@ -51,7 +53,8 @@ export function SortableStepField({
               <div
                 {...attributes}
                 {...listeners}
-                className="cursor-grab active:cursor-grabbing p-1 rounded hover:bg-gray-100 transition-colors"
+                className="cursor-grab active:cursor-grabbing p-2 rounded hover:bg-gray-100 transition-colors touch-none select-none"
+                style={{ touchAction: 'none' }}
               >
                 <GripVertical className="h-4 w-4 text-gray-400 group-hover:text-gray-600" />
               </div>
@@ -201,4 +204,4 @@ export function SortableStepField({
       </div>
     </div>
   )
-}
+})
